@@ -1,6 +1,8 @@
 # 個人ブログ 要件定義
 
-状態: 要件確認待ち。機能・運用のヒアリング結果をまとめた確認版。
+状態: ヒアリング結果を記録。初期構築の方針・範囲・完了条件は合意済み。環境構築は未着手で、今回の作業では開始しない。
+
+未確定・保留の項目と実装時の確認事項は、[未確定・保留事項](./open-items.md) にまとめる。
 
 ## 目的
 
@@ -38,7 +40,7 @@
 - 執筆者は本人のみ。
 - 公開は Git 経由のみ。
 - 公開用ブランチへの push／マージを契機に、ビルドから公開まで自動実行する CD を構築する。
-- CD の具体的な実現方式と公開用ブランチ名は、構築時に決める。
+- 公開用ブランチは main とする。GitHub Actions でチェック・ビルド・テストを実行し、成功後に Wrangler で Cloudflare Pages に公開する。
 - 下書きは非公開とする。
 - 公開前の見た目は手元のプレビューで確認する。
 - 共有用のプレビュー URL は不要。
@@ -64,7 +66,7 @@
 
 ## 見た目
 
-Astro の既存テーマを使用する予定。テーマと具体的なデザインは未決。
+Astro の既存テーマを使用する予定。テーマと具体的なデザインは未決。テーマ選定は一旦保留し、独立して決められる環境設定の検討を先に進める。
 日本語での読みやすさと、決定済みの機能を少ない改修で満たせることを選定基準とする。
 スマートフォンで閲覧でき、読みやすいことを必須とする。
 ライト／ダーク表示、レイアウト、アイキャッチ画像の扱いは未確定。
@@ -79,29 +81,264 @@ Astro の既存テーマを使用する予定。テーマと具体的なデザ�
 ## 記事の URL と日付
 
 - タイトルとは別に URL 用の固定名を指定する。
+- 記事 URL は /posts/<固定名>/ とする。固定名には英数字とハイフンを使用する。
 - タイトル変更時にも記事の URL を維持する。
 - 公開日と更新日は記事ファイルで執筆者が管理する。
+- 公開日・更新日は YYYY-MM-DD 形式の年月日で管理し、日本時間（Asia/Tokyo）を基準に扱う。
 - 更新日の変更要否は執筆者が判断する。
+
+## 記事データの検証
+
+- 公開記事では、タイトル・公開日・URL 用固定名を必須とする。
+- 必須項目の不足、不正な日付、記事 URL の重複はビルドエラーとし、その変更は公開しない。
+- タグ・説明文など、ほかの項目の必須化は記事形式の設計時に決める。
 
 ## 公開先
 
-所有済みの独自ドメインを使用する。
+- サイト名: devegoma's blog
+- 公開ドメイン: blog.devegoma.com
+- 公開 URL: https://blog.devegoma.com/
+
+所有済みの独自ドメインを使用する。Cloudflare のアカウント・Pages プロジェクト・認証などの情報確認は、現段階では保留する。
 独自ドメインの維持費を除き、追加の運用費用は無料を目指す。
 公開時期は未定。テーマ選定後に作業範囲から検討する。
 
-## 技術候補
+## 採用技術
 
 Astro + TypeScript + Tailwind CSS + MDX + Cloudflare Pages。
-ユーザー提示の候補であり、採用は未確定。
+Astro と静的サイト構成、TypeScript・Tailwind CSS・MDX、Cloudflare Pages への公開を採用する。具体的なバージョンは以下に記録し、テーマ導入時に適合性を再確認する。
 
-## 次工程で決める項目
+## サイトの生成方式
 
-- Astro テーマと各技術の採用・バージョン。提示された構成を基本候補とし、テーマとの適合性を確認する。
-- サイト名、自己紹介、外部リンク、具体的なデザイン、SNS 用共通画像。
-- ライト／ダーク表示、レイアウト、記事のアイキャッチ画像。
-- タグや記事の URL の具体的な形式、タグ改名時の旧 URL の扱い。
-- 公開用ブランチ名、CD の実現方式、独自ドメインの具体値と DNS 設定。
-- 公開時期。投稿頻度の数値目標は設けていない。
+- Astro の静的サイト構成を採用する。
+- 公開記事、記事一覧、タグ一覧・タグごとの記事一覧などをビルド時に生成する。
+- RSS・サイトマップなどもビルド時に生成する。
+- 生成した本番公開用成果物を検証し、同じ成果物を Cloudflare Pages にアップロードする。
+
+## ローカル開発環境
+
+- Windows 上で直接開発する。
+- 開発コマンドは PowerShell から実行できるようにする。
+- 手元の Windows と CI の Linux の両方で動作するコマンド・パスの扱いにする。
+- Node.js 24.22.1 LTS と pnpm 12.16.1 を使用する。既存の NVM for Windows で Node.js を有効化し、npm 経由で指定版の pnpm を導入する。テーマ導入時に互換性を再確認する。
+
+## 初期構築の範囲
+
+- テーマ選定前に、Astro の最小構成・pnpm・Lint／整形・型チェック・テスト基盤・GitHub Actions・Dependabot を整える。
+- Node.js・pnpm は合意した版に固定し、各ツールはこの最小構成との互換性を確認して選定・固定する。テーマ導入時に改めて適合性を確認する。
+- テーマの導入と本番デプロイの接続は後から行う。Cloudflare の認証情報などがなくても、ローカル構築と CI の検証を進められる範囲にする。
+- 本番デプロイの接続が完了するまでは、本番公開の完了条件を達成済みと扱わない。
+
+### 初期構築の完了条件
+
+- サンプルの Astro ページと MDX 記事を用意し、手元の Windows で表示を確認できる。
+- サンプルに対して Lint・整形チェック・型チェック・ビルドが成功する。
+- Playwright が合意した Chromium・Firefox の計6構成で、サンプルのページ表示と基本操作を検証できる。
+- GitHub Actions で同じチェックが実行され、失敗時のスクリーンショット・trace を保存できる。
+- 下書きの除外・タグ・固定 URL・RSS などの機能テストは、テーマ導入と各機能の実装に合わせて追加する。初期構築完了時点では、これらの機能の保証が完了したとは扱わない。
+
+## Node.js・pnpm のバージョンと有効化方法
+
+2026-10-28 にローカル環境と公式資料を確認し、以下の方針を確定。インストールや有効化は未実施。
+
+- Node.js は 24.22.1 LTS に固定する。公式の当該リリースを確認済み。
+- pnpm は安定版 12.16.1 に固定する。公式の Node.js 24 対応を確認済み。Astro と各開発ツールの制約は初期構築時に確認する。
+- ローカルには NVM for Windows 2.0.1 があり、24.22.1 と 26.12.1 のインストールディレクトリが存在する。ただし通常の node／pnpm コマンドでは有効なバージョンを取得できていないため、利用可能とは未確認。
+- Node.js は既存の NVM for Windows を利用する。.nvmrc に 24.22.1 を記録し、作業開始時に nvm use 24.22.1 で有効化する。nvm use は既定版を切り替える操作であり、このプロジェクトだけに限定した変更とは扱わない。
+- pnpm は Node.js 有効化後に npm install -g pnpm@12.16.1 で導入する。Corepack は必須にせず、package.json の packageManager に pnpm@12.16.1 を記録する。
+- 有効化後に node --version と pnpm --version で実際の利用版を確認する。
+- CI では選定した同じバージョンを明示して導入する。
+
+公式資料:
+
+- [Node.js 24.22.1](https://nodejs.org/en/blog/release/v24.22.1)
+- [Node.js Releases](https://nodejs.org/en/about/previous-releases)
+- [pnpm 12.16.1](https://github.com/pnpm/pnpm/releases/tag/v12.16.1)
+- [pnpm: Installation](https://pnpm.io/installation)
+- [pnpm: packageManager](https://pnpm.io/package_json#packagemanager)
+
+## 主要パッケージの採用バージョン
+
+2026-10-28 に npm 公式レジストリの公開日時・engines・peerDependencies を確認し、以下の採用を確定。実インストール・ビルドによる検証は未実施。
+
+| パッケージ | 採用バージョン |
+| --- | --- |
+| astro | 7.4.2 |
+| @astrojs/mdx | 8.1.1 |
+| typescript | 6.0.3 |
+| tailwindcss | 4.3.3 |
+| @tailwindcss/vite | 4.3.3 |
+| eslint | 10.13.0 |
+| typescript-eslint | 8.72.1 |
+| eslint-plugin-astro | 3.2.1 |
+| eslint-config-prettier | 10.1.8 |
+| prettier | 3.9.10 |
+| prettier-plugin-astro | 1.1.2 |
+| prettier-plugin-tailwindcss | 0.8.1 |
+| @astrojs/check | 0.9.12 |
+| @playwright/test | 1.64.1 |
+
+- Astro と MDX、Tailwind CSS と Vite 用プラグインはそれぞれ対応する組み合わせで採用する。
+- Node.js 24.22.1・pnpm 12.16.1 は、上記の明示された要求範囲を満たす。
+- TypeScript は、確認時点の astro check と typescript-eslint が共に対応する 6.0.3 を採用する。レジストリの latest を無条件で採用しない。
+- 正確なバージョンを記録し、初期構築時にインストール・チェック・ビルドで確認する。
+- 開発ツールも表の正確なバージョンに固定する。ESLint と Prettier の競合回避には eslint-config-prettier を使用する。
+- Chromium・Firefox は採用した Playwright に対応するブラウザ版を使用する。
+
+一次資料:
+
+- [Astro 7.4.2](https://registry.npmjs.org/astro/7.4.2)
+- [MDX 8.1.1](https://registry.npmjs.org/@astrojs%2Fmdx/8.1.1)
+- [TypeScript 6.0.3](https://registry.npmjs.org/typescript/6.0.3)
+- [Tailwind CSS 4.3.3](https://registry.npmjs.org/tailwindcss/4.3.3)
+- [Tailwind Vite 4.3.3](https://registry.npmjs.org/@tailwindcss%2Fvite/4.3.3)
+- [astro check 0.9.12](https://registry.npmjs.org/@astrojs%2Fcheck/0.9.12)
+- [typescript-eslint 8.72.1](https://registry.npmjs.org/typescript-eslint/8.72.1)
+
+## パッケージ管理方針
+
+要件定義時点では package.json、lockfile、Node.js のバージョン固定設定は存在しない。以下を実装時に設定する。
+
+- パッケージマネージャーは pnpm を採用する。
+- Node.js 24.22.1 と pnpm 12.16.1 に固定し、手元・CI・公開時のビルドでそろえる。テーマ導入時に互換性を再確認する。
+- pnpm-lock.yaml を Git 管理し、CI／CD では pnpm install --frozen-lockfile でインストールする。lockfile の不在や package.json との不整合時は失敗させ、CI／CD 上で更新しない。
+- package.json の packageManager に pnpm の正確なバージョンを記録する。Cloudflare Pages のビルド環境を使用する場合は PNPM_VERSION と Node.js の指定にも反映する。
+- 依存パッケージの更新管理には GitHub Dependabot を使用する予定。更新がある場合に依存関係の更新 PR を週1回自動作成する。CI の結果と変更内容を執筆者が確認し、手動でマージする。自動マージは行わない。
+- Dependabot の更新 PR は develop 向けに作成し、develop で確認した後に main へ反映する。
+- 定期的なバージョン更新の確認は、毎週月曜日09:00・日本時間（Asia/Tokyo）を希望実行時刻とする。GitHub 上の Dependabot が実行し、ローカル作業は不要。指定時刻ちょうどの実行は完了条件に含めない。
+- パッチ・マイナー更新はまとめた PR とし、メジャー更新はパッケージごとに個別の PR とする。
+- pnpm は npm 経由で指定版を導入する。Corepack は導入の必須条件にしない。
+
+2026-10-28 に公式資料を確認。
+
+- [pnpm: packageManager](https://pnpm.io/package_json#packagemanager)
+- [pnpm: install](https://pnpm.io/cli/install#--frozen-lockfile)
+- [pnpm: Installation](https://pnpm.io/installation)
+- [Cloudflare Pages: Build image](https://developers.cloudflare.com/pages/configuration/build-image/)
+
+## Lint・整形・型チェックの選定方針
+
+Lint は ESLint + typescript-eslint + eslint-plugin-astro、整形は Prettier + prettier-plugin-astro を採用する。Tailwind クラスの整列には prettier-plugin-tailwindcss、型チェックには astro check を使用する。
+CI／CD のチェックは必須とし、日本語の文章校正は必要になった段階で追加する。
+テーマに同種の設定がある場合は、対応するバージョンとルールを確認し、設定の重複を避ける。
+
+| 役割 | 採用ツール | 対象・方針 |
+| --- | --- | --- |
+| コードの Lint | ESLint + typescript-eslint + eslint-plugin-astro | JavaScript・TypeScript・Astro。推奨ルールを基本にする。 |
+| ファイルの整形 | Prettier + prettier-plugin-astro | Astro・TypeScript・Markdown・MDX・CSS・JSON など。 |
+| Tailwind クラスの整列 | prettier-plugin-tailwindcss | Prettier による整形時にクラスを整列する。 |
+| 型チェック | astro check（@astrojs/check + TypeScript） | Lint・整形とは別に実行する。 |
+
+### 選定理由と設定方針
+
+- TypeScript は Astro の strict 設定を使用する。初回は strictest を採用しない。
+- 執筆者の決定により、ESLint + Prettier の構成を採用する。
+- ESLint・typescript-eslint・eslint-plugin-astro の推奨ルールを基本にし、初回は型情報を必要とする追加ルールを導入しない。型チェックは astro check で別途実行する。
+- Astro の公式資料が ESLint 用の Astro プラグインと Prettier 用の公式 Astro プラグインを案内しており、構成の根拠とする。
+- Prettier の MDX 用パーサーと Astro 用プラグインを使用する。prettier-plugin-tailwindcss はプラグイン一覧の最後に指定する。
+- テーマの代表的な Astro コンポーネント、MDX 記事、TypeScript、スタイル・設定ファイルで、必要な検査・整形、構文の保持、繰り返し整形しても差分が出ないことを確認する。
+- astro build だけでは型チェックが行われないため、astro check を別途実行する。
+- ESLint では Prettier と競合する整形ルールを無効にする。
+- 初回の MDX は Prettier による整形と、ビルドによる構文・取り込みの検証を行う。MDX 専用 ESLint と記事内コードブロックの Lint は初回には導入せず、必要になった段階で検討する。
+- 初期構築時に最小構成へ設定し、バージョンを固定する。テーマ導入時に既存設定との重複と互換性を再確認する。
+
+### 整形ルール
+
+- インデントはスペース4つ（tabWidth: 4、useTabs: false）とする。
+- それ以外は Prettier の標準設定を基本にする。ダブルクォート、セミコロンあり、折り返し幅80文字を目安、trailingComma: all、改行コード LF とする。
+- Markdown・MDX の文章は proseWrap: preserve とし、執筆時の改行を維持する。
+- Git のテキストファイルも LF に統一し、手元の Windows と CI の改行差分を抑える。バイナリファイルを改行変換の対象にしない。
+
+### 実行方法
+
+- 手元で Lint、整形チェック、自動整形、型チェックをそれぞれ実行できる共通コマンドを用意する。
+- CI／CD では Lint・整形チェック・型チェック・ビルドを必須で実行し、失敗時はその変更を公開しない。
+- CI／CD ではファイルを自動修正せず、手元と同じ設定で検査する。
+- Lint はエラーだけでなく警告が残っている場合も CI を失敗させる。例外が必要な場合は理由を明記し、適用対象を限定する。
+- 必須の実行箇所は CI／CD とする。手元では共通コマンドで実行し、保存時整形をエディタ側で利用できる構成にする。初回はコミット時フックを設けない。
+- 日本語の文章校正（textlint など）は初回導入に含めず、必要になった段階で追加する。
+- Markdown の構造検査（markdownlint など）を別途追加するかは、必要性を確認して決める。
+
+### 公式資料
+
+2026-10-28 確認。
+
+- [Astro: Editor setup](https://docs.astro.build/en/editor-setup/)
+- [Astro: TypeScript](https://docs.astro.build/en/guides/typescript/)
+- [eslint-plugin-astro: User Guide](https://ota-meshi.github.io/eslint-plugin-astro/user-guide/)
+- [Prettier: Options](https://prettier.io/docs/options)
+
+## テスト方針
+
+### 自動テストで保証する範囲
+
+- 公開用ビルドの成果物に、下書きの本文ページが含まれない。記事一覧・タグ・RSS・サイトマップからも下書きが除外される。
+- タグから対象の記事を探せる。
+- 記事タイトルを変更しても、指定した固定 URL が維持される。
+- 記事が新しい順に並ぶ。
+- 記事一覧から記事へ移動でき、目次や主要リンクを利用できる。
+- RSS・サイトマップ・SNS 向け情報が正しく生成される。
+
+公開記事と下書きを含む検証用データで確認する。各項目に適した検証方法と、細かな期待値はテーマ選定後のテスト設計で決める。
+
+### ブラウザと画面サイズ
+
+- Chromium と Firefox を自動テストの対象にする。
+- PC とスマートフォン相当の画面サイズを対象にする。
+- 自動テストの画面サイズは PC の 1280×720・1920×1080、スマートフォン相当の幅の 390×844 とする。Chromium・Firefox のそれぞれで実行し、計6構成を検証する。
+- Safari を実行できるデバイスがないため、実 Safari の確認と Safari 向けの WebKit 自動テストは対象外とする。Safari の動作確認済みとは扱わない。
+- テーマ導入・変更時には、利用できるスマートフォンでも手動確認する。
+
+### CI／CD と見た目の確認
+
+- 自動テストを CI／CD の必須チェックに追加し、失敗した変更は公開しない。
+- 初回はスクリーンショットの差分テストを導入しない。
+- 見た目はテーマ導入・変更時に手動確認する。
+- 公開用ビルドの検証とブラウザ操作の検証には Playwright Test を使用する。
+- テスト失敗時のみスクリーンショットと操作履歴（trace）を保存し、GitHub Actions の成果物として7日間保持する。成功したテストの記録は保持しない。
+- 初回はテストの自動再試行を行わない。失敗時の記録から原因を確認し、必要に応じて CI を手動で再実行する。
+
+### テストツール
+
+- 初回は Playwright Test を使用する。公開用ビルドを手元または CI 上で起動し、生成されたページ・RSS・サイトマップなどの検証とブラウザ操作の検証を行う。
+- Chromium・Firefox を使用する。WebKit のプロジェクトは追加しない。
+- PC とスマートフォン相当の画面サイズを検証する。端末エミュレーションは実機検証の代替とは扱わない。
+- 下書き本文の非生成など、HTTP の応答だけでは保証できない項目は、ビルド成果物自体も検査する。
+- 初回から別の単体テスト用ツールは追加せず、独自の分類・日付処理などが増えた段階で必要性を判断する。
+
+2026-10-28 に公式資料を確認。
+
+- [Astro: Testing / Playwright](https://docs.astro.build/en/guides/testing/#playwright): 本番ビルドを使ったテストを案内している。
+- [Playwright: Browsers](https://playwright.dev/docs/browsers): 自動テストに使用するブラウザに関する資料。
+- [Playwright: Emulation](https://playwright.dev/docs/emulation): 端末条件のエミュレーションに関する資料。
+
+## CI／CD 構成方針
+
+- GitHub Actions を使用し、Lint・整形チェック・型チェック・ビルド・Playwright Test を必須で実行する。
+- main を本番公開用、develop を開発用とする。main への push／マージ後、全チェックに成功した場合のみ本番公開する。develop はチェックのみとし、外部プレビューは作らない。
+- main または develop を対象にした PR の作成・更新時と、両ブランチへの push 時に全チェックを実行する。Dependabot の更新 PR も同じ対象とする。PR の検査では本番公開しない。
+- デプロイは必要な全チェックの成功に依存させ、検証済みの同じビルド成果物を Wrangler で Cloudflare Pages にアップロードする。Pages の独立した Git 自動公開によるチェックの迂回を発生させない。
+- テスト用記事を含む検証用成果物と、本番公開用成果物を混同しない。本番成果物にも適用する検査を定め、検証した本番成果物を再ビルドせず公開する。
+- 初回は標準の Linux ランナーを候補とする。無料枠と成果物の保管量を踏まえて設定する。
+- 各 CI ジョブの実行時間上限は20分とし、実測後に必要に応じて調整する。
+- pnpm のストアをキャッシュする。Playwright のブラウザバイナリはキャッシュせず、各実行で必要なブラウザと OS 依存パッケージを導入する。
+- main への直接 push を禁止し、PR と全必須チェックの成功をマージ条件とする。他人によるレビュー承認は必須にしない。ブランチ保護設定の利用可否はリポジトリの公開範囲・プランに合わせて構築時に確認する。
+- 本番公開は同時に1件に制限する。公開直前に対象コミットが最新の main か確認し、古いコミットなら公開をスキップする。
+- 公開後に不具合が見つかった場合は、問題の変更を取り消す PR を作成し、全必須チェックを通過して main にマージした後に再公開する。
+- 任意の過去版を手動で即時公開する機能は初回には含めず、必要になった段階で追加する。
+- Cloudflare Pages のプロジェクト作成方式は未決。Direct Upload で作成したプロジェクトは後から Git 連携に切り替えられないため、構築前に確認する。
+
+2026-10-28 にリポジトリを確認。main と develop が存在し、既定ブランチは main。既存の GitHub Actions 設定はない。
+
+公式資料:
+
+- [Cloudflare Pages: Direct Upload with CI](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/)
+- [Cloudflare Pages: Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/)
+- [GitHub Actions: Using jobs](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-jobs)
+
+## 未確定・保留事項の参照先
+
+今後決める内容と、決定済みの方針を実装時に確認する内容は、[未確定・保留事項](./open-items.md) を参照する。
 
 ## 初回公開の完了条件案
 
@@ -110,23 +347,69 @@ Astro + TypeScript + Tailwind CSS + MDX + Cloudflare Pages。
 - [ ] 合意した各画面を閲覧でき、スマートフォンでも本文とナビゲーションを利用できる。
 - [ ] 記事に必要な表現を使用でき、複数タグの付け外しと過去記事を含むタグ名変更ができる。
 - [ ] 記事タイトルを変更しても URL が維持され、公開日・更新日を手動で管理できる。
+- [ ] 公開記事の必須項目不足・不正な日付・記事 URL の重複をビルド時に検出し、公開を停止できる。
 - [ ] 下書きを手元で確認でき、公開成果物には本文・一覧・タグ・RSS・サイトマップ経由で含まれない。
 - [ ] 公開記事の検索エンジン向け情報、SNS 共有情報、RSS が提供される。
 - [ ] 公開用ブランチへの push／マージからビルド・公開まで自動実行される。
+- [ ] CI／CD で Lint・整形チェック・型チェック・ビルドが必須実行され、失敗した変更は公開されない。
+- [ ] 合意した自動テストが CI／CD で必須実行され、失敗した変更は公開されない。
+- [ ] main の PR・必須チェックによるマージ制御と、本番公開の同時実行制限・公開直前の最新コミット確認が設定されている。
 - [ ] 所有済み独自ドメインの HTTPS URL で公開できる。
 - [ ] 選定時点の無料枠と利用条件に収まる構成であることを確認する。
 
 ## 技術面の確認と提案
 
-2026-10-28 に公式資料を確認。静的生成を基本とする案は、現在の機能要件からの提案であり、まだ採用確定ではない。
+2026-10-28 に公式資料を確認。その後のヒアリングで、Astro の静的サイト構成の採用を確定した。
 
 - [Astro の Cloudflare 公開ガイド](https://docs.astro.build/en/guides/deploy/cloudflare/): 公開方式の確認資料。
-- [Cloudflare Pages の Git 連携](https://developers.cloudflare.com/pages/configuration/git-integration/): GitHub／GitLab の更新から自動公開できる。対応する Git ホストを利用する場合、CD の実現候補となる。
-- [ブランチごとの公開制御](https://developers.cloudflare.com/pages/configuration/branch-build-controls/): 本番ブランチの指定とプレビュー公開の制御に使用できる。手元のみのプレビュー要件に合わせ、外部プレビューは無効にする案。
+- [Cloudflare Pages の Git 連携](https://developers.cloudflare.com/pages/configuration/git-integration/): 初期に検討した候補。現在は GitHub Actions から Wrangler で公開する方針とし、Pages 側で独立した Git 自動公開は行わない。
+- [ブランチごとの公開制御](https://developers.cloudflare.com/pages/configuration/branch-build-controls/): 既存 Git 連携プロジェクトを使用する場合の自動公開停止に関する確認資料。外部プレビューも作らない。
 
-静的生成と具体的な CD 方式は、テーマ選定・構築時に確認する。無料枠の上限、テーマの利用条件・対応技術も選定時に確認する。
+静的サイト構成を前提に、テーマとの適合性と CI／CD の具体的な設定をテーマ選定・構築時に確認する。無料枠の上限、テーマの利用条件・対応技術も選定時に確認する。
 
 ## 記録
+
+2026-10-28: 環境構築には進まず、未確定・保留事項と実装時の確認事項を docs/open-items.md に整理する。今回までのドキュメント変更を develop に保存する。
+
+2026-10-28: 初期構築はサンプルの Astro ページ・MDX 記事を用い、開発ツール・6構成の Playwright テスト・CI と失敗時記録の動作確認まで行うことを確認。ブログ機能のテストはテーマ導入と各機能の実装に合わせて追加する。
+
+2026-10-28: ESLint 10.13.0・typescript-eslint 8.72.1・eslint-plugin-astro 3.2.1・eslint-config-prettier 10.1.8・Prettier 3.9.10・prettier-plugin-astro 1.1.2・prettier-plugin-tailwindcss 0.8.1・@astrojs/check 0.9.12・@playwright/test 1.64.1 の採用を確認。
+
+2026-10-28: Astro 7.4.2・@astrojs/mdx 8.1.1・TypeScript 6.0.3・tailwindcss 4.3.3・@tailwindcss/vite 4.3.3 の採用を確認。
+
+2026-10-28: テストは自動再試行なしとし、失敗原因の確認後に必要なら CI を手動再実行する方針を確認。Lint の警告も CI の失敗条件とし、例外は理由を明記して対象を限定する。
+
+2026-10-28: Playwright の対象サイズを 1280×720・1920×1080・390×844 とし、Chromium・Firefox の計6構成で検証することを確認。失敗時のスクリーンショット・trace を7日保持、CI ジョブ上限20分、pnpm ストアのキャッシュを採用し、Playwright のブラウザバイナリは毎回導入する。
+
+2026-10-28: TypeScript は strict、ESLint は型情報不要の推奨ルール、整形はスペース4つ以外を Prettier 標準設定、文章の改行は preserve とする方針を確認。MDX は整形とビルドで検証し、MDX 専用 ESLint と記事内コードブロックの Lint は初回に導入しない。
+
+2026-10-28: Node.js 24.22.1 LTS・pnpm 12.16.1 に固定し、既存の NVM for Windows と .nvmrc を使用する方針を確認。Node.js 有効化後に npm 経由で指定版 pnpm を導入し、packageManager に同じ版を記録する。
+
+2026-10-28: テーマ導入・本番デプロイ接続に先立ち、Astro の最小構成と開発ツール・CI を構築する方針を確認。記事 URL は /posts/<固定名>/、日付は YYYY-MM-DD・日本時間とする。公開記事の必須項目・日付・URL 重複を検証し、初回はコミット時フックを設けず、手元のコマンド・保存時整形と CI を利用する。
+
+2026-10-28: Astro の静的サイト構成を採用することを確定。記事・一覧・タグページ・RSS・サイトマップをビルド時に生成し、検証済みの本番成果物を公開する。
+
+2026-10-28: ローカル開発は Windows 上で直接行う方針を確認。
+
+2026-10-28: Dependabot の更新 PR は develop 向け、定期更新確認は毎週月曜日09:00・日本時間、パッチ・マイナー更新はまとめ、メジャー更新は個別にする方針を確認。希望実行時刻は当初の土曜日12:00から変更。
+
+2026-10-28: Astro テーマの選定を一旦保留し、ほかの環境設定の検討を先に進める。
+
+2026-10-28: サイト名を devegoma's blog、公開ドメインを blog.devegoma.com に決定。Cloudflare に関する情報確認は一旦保留し、初期環境構築に必要な残りの項目を先に確認する。
+
+2026-10-28: Linter を ESLint + typescript-eslint + eslint-plugin-astro、Formatter を Prettier + prettier-plugin-astro、Tailwind クラス整列を prettier-plugin-tailwindcss、型チェックを astro check に確定。以前の Biome 優先方針を置き換える。
+
+2026-10-28: main の直接 push 禁止、PR と全必須チェック成功によるマージ、レビュー承認は必須にしない方針を確認。本番公開は同時に1件とし、公開直前に最新の main を確認する。不具合は取り消し PR をチェック後に再公開して復旧する。
+
+2026-10-28: GitHub Actions によるチェック・ビルド・テストと、成功後の Wrangler による Pages 公開を確認。main は本番公開、develop はチェックのみ。両ブランチ向け PR と両ブランチへの push で全チェックを実行し、Dependabot の PR も対象にする。
+
+2026-10-28: 依存パッケージの更新管理に GitHub Dependabot を使用する予定であることを確認。
+
+2026-10-28: pnpm の採用、Node.js・pnpm のバージョン固定、lockfile の Git 管理と CI／CD での固定インストールを確認。依存関係の更新 PR を週1回自動作成し、CI の結果と変更内容を執筆者が確認して手動マージする。
+
+2026-10-28: Playwright Test の採用を確認。自動テストは Chromium・Firefox と PC／スマートフォン相当の画面を対象とする。Safari を実行できるデバイスがないため、Safari および Safari 向けの WebKit テストは対象外に変更。テスト失敗時は公開を停止し、初回のスクリーンショット差分テストは導入しない。テーマ導入・変更時には利用できる端末で手動確認する。
+
+2026-10-28（旧方針・置き換え済み）: Biome による Lint・整形の統一を優先し、対応が難しければ ESLint + Biome（formatter 機能のみ）を採用する方針を検討した。現在は ESLint + Prettier に確定。CI／CD のチェック必須、日本語の文章校正は必要になった段階で追加する方針は継続する。
 
 2026-10-28: 目的、扱う内容、執筆者、Git 経由の公開を確認。
 2026-10-28: 主な読者、タグによる探索、既存記事の移行なしを確認。
