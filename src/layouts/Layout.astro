@@ -1,0 +1,30 @@
+---
+import "../styles/global.css";
+
+interface Props {
+    title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{title} | devegoma's blog</title>
+    </head>
+    <body class="bg-white text-slate-900">
+        <div class="mx-auto max-w-3xl px-6 py-10 leading-8">
+            <header class="mb-10">
+                <a class="underline" href="/">
+                    devegoma's blog
+                </a>
+            </header>
+            <main>
+                <slot />
+            </main>
+        </div>
+    </body>
+</html>
