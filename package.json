@@ -17,7 +17,7 @@
         "format:check": "prettier --check .",
         "check": "astro check",
         "test": "pnpm test:unit && pnpm build && playwright test",
-        "test:unit": "node --test unit-tests",
+        "test:unit": "node --test unit-tests/page-title.test.mjs",
         "test:ui": "playwright test --ui"
     },
     "dependencies": {
