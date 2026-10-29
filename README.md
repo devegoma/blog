@@ -22,17 +22,18 @@ Linux でブラウザを導入する場合は `pnpm exec playwright install --wi
 
 ## コマンド
 
-| コマンド            | 内容                                               |
-| ------------------- | -------------------------------------------------- |
-| `pnpm dev`          | 開発サーバー                                       |
-| `pnpm lint`         | 推奨ルールで検査。警告も失敗扱い                   |
-| `pnpm format`       | Prettier で整形                                    |
-| `pnpm format:check` | 整形を検査                                         |
-| `pnpm check`        | Astro / TypeScript の型チェック                    |
-| `pnpm build`        | 静的ファイルを `dist/` に生成                      |
-| `pnpm preview`      | ビルド済み成果物のプレビュー                       |
-| `pnpm test`         | ビルド後、Chromium・Firefox × 3サイズの6構成で検証 |
-| `pnpm test:ui`      | Playwright UI（先に `pnpm build` を実行）          |
+| コマンド            | 内容                                                      |
+| ------------------- | --------------------------------------------------------- |
+| `pnpm dev`          | 開発サーバー                                              |
+| `pnpm lint`         | 推奨ルールで検査。警告も失敗扱い                          |
+| `pnpm format`       | Prettier で整形                                           |
+| `pnpm format:check` | 整形を検査                                                |
+| `pnpm check`        | Astro / TypeScript の型チェック                           |
+| `pnpm build`        | 静的ファイルを `dist/` に生成                             |
+| `pnpm preview`      | ビルド済み成果物のプレビュー                              |
+| `pnpm test:unit`    | Node.js 標準テストランナーで単体テストを実行              |
+| `pnpm test`         | 単体テスト後、Chromium・Firefox × 3サイズの6構成で検証    |
+| `pnpm test:ui`      | Playwright UI（先に `pnpm build` を実行）                 |
 
 Playwright は 127.0.0.1:4321 で専用のプレビューを起動します。テスト時はこのポートを空けてください。
 失敗時は `test-results/` にスクリーンショットと trace を保存します。
