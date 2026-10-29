@@ -31,10 +31,10 @@ Linux でブラウザを導入する場合は `pnpm exec playwright install --wi
 | `pnpm check`        | Astro / TypeScript の型チェック                    |
 | `pnpm build`        | 静的ファイルを `dist/` に生成                      |
 | `pnpm preview`      | ビルド済み成果物のプレビュー                       |
-| `pnpm test`         | 単体テストと6構成のブラウザテスト                  |
+| `pnpm test`         | ビルド後、Chromium・Firefox × 3サイズの6構成で検証 |
 | `pnpm test:ui`      | Playwright UI（先に `pnpm build` を実行）          |
 
-`pnpm test:unit` で Node.js 標準テストランナーによる単体テストだけを実行できます。
+`pnpm test:unit` で Node.js 標準テストランナーによる単体テストだけを実行できます。`pnpm test` は単体テストも先に実行します。
 
 Playwright は 127.0.0.1:4321 で専用のプレビューを起動します。テスト時はこのポートを空けてください。
 失敗時は `test-results/` にスクリーンショットと trace を保存します。
