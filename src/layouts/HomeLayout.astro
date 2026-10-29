@@ -1,0 +1,77 @@
+---
+import "../styles/global.css";
+import "../styles/home.css";
+import { formatPageTitle } from "../utils/page-title.mjs";
+---
+
+<!doctype html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            name="description"
+            content="読んだ本、試した道具。日々の学びを記録する devegoma の個人ブログ。"
+        />
+        <title>{formatPageTitle("記事")}</title>
+        <script is:inline>
+            (() => {
+                const media = matchMedia("(prefers-color-scheme: dark)");
+                let preference;
+                try {
+                    const saved = localStorage.getItem("color-theme");
+                    if (saved === "light" || saved === "dark")
+                        preference = saved;
+                } catch {
+                    /* 保存不可でも OS 設定と画面内の操作を使用する。 */
+                }
+                const apply = () => {
+                    const theme =
+                        preference || (media.matches ? "dark" : "light");
+                    document.documentElement.dataset.theme = theme;
+                    document.documentElement.style.colorScheme = theme;
+                    const button = document.querySelector(
+                        "[data-theme-toggle]",
+                    );
+                    if (button)
+                        button.setAttribute(
+                            "aria-label",
+                            theme === "dark"
+                                ? "ライトモードに切り替える"
+                                : "ダークモードに切り替える",
+                        );
+                };
+                apply();
+                media.addEventListener("change", () => {
+                    if (!preference) apply();
+                });
+                document.addEventListener("DOMContentLoaded", () => {
+                    apply();
+                    const button = document.querySelector(
+                        "[data-theme-toggle]",
+                    );
+                    if (!button) return;
+                    button.hidden = false;
+                    button.addEventListener("click", () => {
+                        preference =
+                            document.documentElement.dataset.theme === "dark"
+                                ? "light"
+                                : "dark";
+                        try {
+                            localStorage.setItem("color-theme", preference);
+                        } catch {
+                            /* 操作自体は継続する。 */
+                        }
+                        apply();
+                    });
+                });
+            })();
+        </script>
+    </head>
+    <body class="home-page">
+        <a class="skip-link" href="#articles">
+            記事一覧へ移動
+        </a>
+        <slot />
+    </body>
+</html>

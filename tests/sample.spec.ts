@@ -2,11 +2,12 @@ import { expect, test } from "@playwright/test";
 
 test("トップから MDX 記事を読み、トップに戻れる", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle("環境構築サンプル | devegoma's blog");
-    const heading = page.getByRole("heading", { name: "環境構築サンプル" });
+    await expect(page).toHaveTitle("記事 | devegoma's blog");
+    const heading = page.getByRole("heading", { name: "最近の記録" });
     await expect(heading).toBeVisible();
-    await expect(heading).toHaveCSS("font-weight", "700");
-    await page.getByRole("link", { name: "MDX サンプルを読む" }).click();
+    await page
+        .getByRole("link", { name: "読書メモを、あとから使える形にする" })
+        .click();
     await expect(page).toHaveURL(/\/posts\/sample\/$/);
     await expect(
         page.getByRole("heading", { name: "MDX サンプル", exact: true }),
