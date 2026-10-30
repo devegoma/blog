@@ -64,6 +64,19 @@ import { formatPageTitle } from "../utils/page-title.mjs";
                         }
                         apply();
                     });
+                    const searchButton =
+                        document.querySelector("[data-search-open]");
+                    const searchDialog =
+                        document.getElementById("article-search");
+                    if (
+                        searchButton &&
+                        searchDialog instanceof HTMLDialogElement
+                    ) {
+                        searchButton.hidden = false;
+                        searchButton.addEventListener("click", () =>
+                            searchDialog.showModal(),
+                        );
+                    }
                 });
             })();
         </script>

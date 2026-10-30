@@ -1,5 +1,46 @@
 import { expect, test } from "@playwright/test";
 
+test("検索は準備中と分かり、モバイルでは開閉して元のボタンへ戻れる", async ({
+    page,
+    viewport,
+}) => {
+    await page.goto("/");
+    const input = page.getByRole("searchbox", { name: "記事を検索（準備中）" });
+    if (viewport!.width <= 899) {
+        const open = page.getByRole("button", { name: "検索を開く" });
+        await expect(open).toBeVisible();
+        const box = (await open.boundingBox())!;
+        expect(box.width).toBeGreaterThanOrEqual(44);
+        expect(box.height).toBeGreaterThanOrEqual(44);
+        await expect(input).toBeHidden();
+        await open.press("Enter");
+        const dialog = page.getByRole("dialog", { name: "記事検索" });
+        await expect(dialog).toBeVisible();
+        await expect(
+            dialog.getByText(
+                "検索は準備中です。記事を探す機能は今後追加します。",
+            ),
+        ).toBeVisible();
+        const close = dialog.getByRole("button", { name: "閉じる" });
+        await expect(close).toBeFocused();
+        await expect(input).toBeDisabled();
+        await close.press("Escape");
+        await expect(dialog).toBeHidden();
+        await expect(open).toBeFocused();
+        await open.press("Space");
+        await close.click();
+        await expect(dialog).toBeHidden();
+        await expect(open).toBeFocused();
+    } else {
+        await expect(input).toBeVisible();
+        await expect(input).toBeDisabled();
+        await expect(input).toHaveAttribute("placeholder", "検索は準備中");
+        await expect(
+            page.getByRole("button", { name: "検索を開く" }),
+        ).toBeHidden();
+    }
+});
+
 test("ホームに記事一覧・プロフィール・未実装の導線が表示される", async ({
     page,
 }) => {
@@ -41,6 +82,7 @@ test("OSの配色から始まり、キーボードで切り替えた選択を再
     const dark = await page
         .locator("body")
         .evaluate((body) => getComputedStyle(body).backgroundColor);
+    expect(dark).toBe("rgb(16, 28, 36)");
     await page.emulateMedia({ colorScheme: "light" });
     await expect(
         page.getByRole("button", { name: "ダークモードに切り替える" }),
@@ -63,7 +105,7 @@ test("OSの配色から始まり、キーボードで切り替えた選択を再
     await expect(page.locator("body")).toHaveCSS("background-color", light);
 });
 
-test("保存が使えなくても切り替えられ、ボタンをタグの下で操作できる", async ({
+test("保存が使えなくてもヘッダーのボタンで配色を切り替えられる", async ({
     page,
 }) => {
     const errors: string[] = [];
@@ -91,12 +133,17 @@ test("保存が使えなくても切り替えられ、ボタンをタグの下�
     const box = (await button.boundingBox())!;
     expect(box.width).toBeGreaterThanOrEqual(44);
     expect(box.height).toBeGreaterThanOrEqual(44);
-    for (const name of ["TypeScript", "Astro", "Obsidian"]) {
-        const tag = (await page
-            .getByRole("link", { name, exact: true })
-            .boundingBox())!;
-        expect(tag.y + tag.height).toBeLessThanOrEqual(box.y);
-    }
+    const header = page.getByRole("banner");
+    await expect(
+        header.getByRole("button", { name: "ダークモードに切り替える" }),
+    ).toBeVisible();
+    const logo = (await header
+        .getByRole("link", { name: "devegoma’s blog ホーム" })
+        .boundingBox())!;
+    expect(logo.x + logo.width).toBeLessThanOrEqual(box.x);
+    expect(
+        Math.abs(logo.y + logo.height / 2 - box.y - box.height / 2),
+    ).toBeLessThan(2);
     await button.press("Space");
     await expect(
         page.getByRole("button", { name: "ライトモードに切り替える" }),
@@ -114,36 +161,40 @@ test("画面幅に応じて記事画像とナビ・タグ・プロフィール�
 }) => {
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
-    const mobile = viewport!.width < 768;
+    const mobile = viewport!.width <= 899;
     for (const image of await page.locator("article img").all()) {
-        if (mobile) {
-            await expect(image).toBeHidden();
-        } else {
-            await expect(image).toBeVisible();
-            const box = (await image.boundingBox())!;
-            expect(box.width / box.height).toBeCloseTo(16 / 9, 3);
-            expect(box.width).toBeLessThanOrEqual(320);
-            const row = (await image.locator("..").boundingBox())!;
-            expect(box.y - row.y).toBeGreaterThanOrEqual(20);
-            expect(
-                row.y + row.height - box.y - box.height,
-            ).toBeGreaterThanOrEqual(20);
-        }
+        await expect(image).toBeVisible();
+        const box = (await image.boundingBox())!;
+        expect(box.width / box.height).toBeCloseTo(16 / 9, 2);
+        expect(box.width).toBeLessThanOrEqual(mobile ? 140 : 320);
+        const row = (await image.locator("..").boundingBox())!;
+        expect(box.y - row.y).toBeGreaterThanOrEqual(20);
+        expect(row.y + row.height - box.y - box.height).toBeGreaterThanOrEqual(
+            20,
+        );
     }
+    const header = page.getByRole("banner");
+    const nav = (await header
+        .getByRole("navigation", { name: "メイン" })
+        .boundingBox())!;
+    const logo = (await header
+        .getByRole("link", { name: "devegoma’s blog ホーム" })
+        .boundingBox())!;
+    expect(nav.y).toBeGreaterThanOrEqual(logo.y + logo.height);
+    await expect(
+        header.getByRole("link", { name: "このブログについて" }),
+    ).toBeVisible();
     if (mobile) {
-        const nav = (await page
-            .getByRole("navigation", { name: "メイン" })
-            .boundingBox())!;
         const tags = (await page
-            .getByRole("region", { name: "タグと表示設定" })
+            .getByRole("region", { name: "タグ", exact: true })
             .boundingBox())!;
         const articles = (await page.getByRole("main").boundingBox())!;
         const profile = (await page
             .getByRole("region", { name: "devegoma", exact: true })
             .boundingBox())!;
-        expect(nav.y + nav.height).toBeLessThanOrEqual(tags.y);
-        expect(tags.y + tags.height).toBeLessThanOrEqual(articles.y);
-        expect(articles.y + articles.height).toBeLessThanOrEqual(profile.y);
+        expect(nav.y + nav.height).toBeLessThanOrEqual(profile.y);
+        expect(profile.y + profile.height).toBeLessThanOrEqual(articles.y);
+        expect(articles.y + articles.height).toBeLessThanOrEqual(tags.y);
     }
     expect(
         await page.evaluate(

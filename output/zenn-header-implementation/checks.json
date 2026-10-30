@@ -1,0 +1,100 @@
+[
+    {
+        "width": 320,
+        "colorScheme": "light",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 320,
+        "colorScheme": "dark",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 390,
+        "colorScheme": "light",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 390,
+        "colorScheme": "dark",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 899,
+        "colorScheme": "light",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 899,
+        "colorScheme": "dark",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 900,
+        "colorScheme": "light",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 900,
+        "colorScheme": "dark",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 1280,
+        "colorScheme": "light",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 1280,
+        "colorScheme": "dark",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 1440,
+        "colorScheme": "light",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 1440,
+        "colorScheme": "dark",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 1920,
+        "colorScheme": "light",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    },
+    {
+        "width": 1920,
+        "colorScheme": "dark",
+        "overflow": false,
+        "controlsOverlap": false,
+        "longTitleOverlap": false
+    }
+]

@@ -35,12 +35,124 @@ const posts = [
 ---
 
 <HomeLayout>
+    <header class="site-header">
+        <div class="home-shell">
+            <div class="masthead">
+                <a
+                    class="wordmark"
+                    href="/"
+                    aria-label="devegoma’s blog ホーム"
+                >
+                    devegoma<span>’</span>s blog
+                </a>
+                <div class="header-actions">
+                    <div
+                        class="desktop-search"
+                        role="search"
+                        aria-label="記事検索"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="10.5" cy="10.5" r="7" />
+                            <path d="m16 16 5 5" />
+                        </svg>
+                        <input
+                            type="search"
+                            aria-label="記事を検索（準備中）"
+                            placeholder="検索は準備中"
+                            disabled
+                        />
+                    </div>
+                    <button
+                        class="search-open icon-link"
+                        type="button"
+                        aria-label="検索を開く"
+                        aria-haspopup="dialog"
+                        aria-controls="article-search"
+                        data-search-open
+                        hidden
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="10.5" cy="10.5" r="7" />
+                            <path d="m16 16 5 5" />
+                        </svg>
+                    </button>
+                    <button
+                        class="theme-toggle icon-link"
+                        type="button"
+                        data-theme-toggle
+                        aria-label="ダークモードに切り替える"
+                        hidden
+                    >
+                        <svg
+                            class="moon-icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+                        </svg>
+                        <svg
+                            class="sun-icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="4"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+                            <path
+                                d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <nav class="main-nav" aria-label="メイン">
+                <a href="/" aria-current="page">
+                    記事
+                </a>
+                <span role="link" aria-disabled="true">
+                    タグ
+                </span>
+                <span role="link" aria-disabled="true">
+                    このブログについて
+                </span>
+            </nav>
+        </div>
+    </header>
+    <dialog
+        id="article-search"
+        class="search-dialog"
+        aria-labelledby="search-title"
+        aria-describedby="search-note"
+    >
+        <h2 id="search-title">記事検索</h2>
+        <p id="search-note">
+            検索は準備中です。記事を探す機能は今後追加します。
+        </p>
+        <input
+            type="search"
+            aria-label="記事を検索（準備中）"
+            placeholder="検索は準備中"
+            disabled
+        />
+        <form method="dialog">
+            <button class="search-close" autofocus>
+                閉じる
+            </button>
+        </form>
+    </dialog>
     <div class="home-shell">
-        <header class="masthead">
-            <a class="wordmark" href="/" aria-label="devegoma’s blog ホーム">
-                devegoma<span>’</span>s blog
-            </a>
-        </header>
         <div class="home-grid">
             <section class="profile panel" aria-labelledby="profile-name">
                 <div class="avatar" aria-hidden="true">
@@ -105,19 +217,7 @@ const posts = [
                     </div>
                 </div>
             </section>
-            <nav class="main-nav panel" aria-label="メイン">
-                <a href="/" aria-current="page">
-                    記事
-                </a>
-                <span role="link" aria-disabled="true">
-                    タグ
-                </span>
-                <span role="link" aria-disabled="true">
-                    <span class="nav-desktop">このブログについて</span>
-                    <span class="nav-mobile">紹介</span>
-                </span>
-            </nav>
-            <section class="preferences" aria-label="タグと表示設定">
+            <section class="preferences" aria-label="タグ">
                 <div class="tags panel">
                     <h2>タグ</h2>
                     <div class="tag-list">
@@ -128,45 +228,6 @@ const posts = [
                         ))}
                     </div>
                 </div>
-                <button
-                    class="theme-toggle icon-link"
-                    type="button"
-                    data-theme-toggle
-                    aria-label="ダークモードに切り替える"
-                    hidden
-                >
-                    <svg
-                        class="moon-icon"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                    >
-                        <path
-                            d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                        />
-                    </svg>
-                    <svg
-                        class="sun-icon"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                    >
-                        <circle
-                            cx="12"
-                            cy="12"
-                            r="4"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                        />
-                        <path
-                            d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                        />
-                    </svg>
-                </button>
             </section>
             <main class="articles-column" id="articles">
                 <div class="list-heading">
