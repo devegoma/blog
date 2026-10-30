@@ -36,7 +36,7 @@
     box-sizing: border-box;
 }
 .home-shell {
-    width: min(100% - 96px, 1280px);
+    width: min(100% - 96px, 1440px);
     margin-inline: auto;
 }
 .site-header {
@@ -154,15 +154,23 @@
 }
 .home-grid {
     display: grid;
-    grid-template-columns: 300px minmax(0, 1fr);
-    grid-template-rows: min-content min-content 1fr;
+    grid-template-columns: 240px minmax(0, 1fr) 240px;
+    grid-template-rows: min-content 1fr;
     gap: 16px 28px;
     align-items: start;
-    grid-template-areas: "profile articles" "preferences articles" ". articles";
+    grid-template-areas: ". heading ." "sidebar articles archives";
     margin-top: 48px;
 }
+.sidebar {
+    grid-area: sidebar;
+    display: grid;
+    gap: 16px;
+    position: sticky;
+    top: 24px;
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+}
 .profile {
-    grid-area: profile;
     padding: 24px;
 }
 .panel,
@@ -229,13 +237,14 @@
     border-bottom-color: var(--accent);
 }
 .preferences {
-    grid-area: preferences;
     min-width: 0;
 }
-.tags {
+.tags,
+.archives {
     padding: 16px 20px 20px;
 }
-.tags h2 {
+.tags h2,
+.archives h2 {
     margin: 0 0 8px;
     font-size: 22px;
     font-weight: 800;
@@ -244,6 +253,37 @@
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+}
+.archives {
+    grid-area: archives;
+}
+.archives ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.archives li + li {
+    border-top: 1px solid var(--line);
+}
+.archives a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+    color: var(--ink);
+    text-decoration: none;
+}
+.archives a:hover,
+.archives a[aria-current="page"] {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+.archive-count {
+    color: var(--muted);
+    font-size: 14px;
+    white-space: nowrap;
 }
 .tag {
     border: 1px solid var(--line);
@@ -256,11 +296,13 @@
     min-width: 0;
 }
 .list-heading {
+    grid-area: heading;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    margin: 8px 8px 20px;
+    margin: 8px 8px 4px;
 }
 .list-heading h1 {
     font-size: 32px;
@@ -268,9 +310,16 @@
     font-weight: 800;
     margin: 0;
 }
-.list-heading > span {
-    white-space: nowrap;
+.post-sort {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
     color: var(--muted);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
 }
 .article-list {
     padding-inline: 24px;
@@ -341,7 +390,7 @@
 }
 .home-footer {
     border-top: 1px solid var(--line);
-    padding: 16px max(48px, calc((100vw - 1280px) / 2));
+    padding: 16px max(48px, calc((100vw - 1440px) / 2));
     margin-top: 32px;
     display: flex;
     gap: 16px;
@@ -397,7 +446,7 @@
     display: none;
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1199px) {
     .desktop-search {
         display: none;
     }
@@ -420,7 +469,7 @@
     .home-grid {
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto;
-        grid-template-areas: "profile" "articles" "preferences";
+        grid-template-areas: "sidebar" "heading" "articles" "archives";
         gap: 24px;
         margin-top: 24px;
     }
@@ -431,23 +480,22 @@
     .main-nav > * {
         padding: 12px 4px;
     }
-    .tags {
+    .tags,
+    .archives {
         padding: 16px;
     }
-    .tags h2 {
+    .tags h2,
+    .archives h2 {
         font-size: 20px;
     }
     .tag {
         padding: 6px 16px;
     }
     .list-heading {
-        margin: 0 0 16px;
+        margin: 0 0 -8px;
     }
     .list-heading h1 {
         font-size: 26px;
-    }
-    .list-heading > span {
-        font-size: 14px;
     }
     .article-list {
         padding-inline: 14px;
@@ -475,6 +523,11 @@
     .post-meta {
         font-size: 13px;
         gap: 6px 12px;
+    }
+    .sidebar {
+        position: static;
+        max-height: none;
+        overflow-y: visible;
     }
     .profile {
         display: flex;

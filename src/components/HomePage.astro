@@ -1,0 +1,338 @@
+---
+import HomeLayout from "../layouts/HomeLayout.astro";
+
+import { posts } from "../data/posts";
+
+interface Props {
+    month?: string;
+}
+const { month } = Astro.props;
+const sortedPosts = [...posts].sort((a, b) => b.date.localeCompare(a.date));
+const months = [...new Set(sortedPosts.map((post) => post.date.slice(0, 7)))];
+const monthLabel = (value: string) => {
+    const [year, month] = value.split("-");
+    return `${year}年${Number(month)}月`;
+};
+const heading = month ? `${monthLabel(month)}の記録` : "最近の記録";
+const visiblePosts = month
+    ? sortedPosts.filter((post) => post.date.startsWith(`${month}-`))
+    : sortedPosts.slice(0, 10);
+---
+
+<HomeLayout title={month ? heading : "記事"}>
+    <header class="site-header">
+        <div class="home-shell">
+            <div class="masthead">
+                <a
+                    class="wordmark"
+                    href="/"
+                    aria-label="devegoma’s blog ホーム"
+                >
+                    devegoma<span>’</span>s blog
+                </a>
+                <div class="header-actions">
+                    <div
+                        class="desktop-search"
+                        role="search"
+                        aria-label="記事検索"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="10.5" cy="10.5" r="7" />
+                            <path d="m16 16 5 5" />
+                        </svg>
+                        <input
+                            type="search"
+                            aria-label="記事を検索（準備中）"
+                            placeholder="検索は準備中"
+                            disabled
+                        />
+                    </div>
+                    <button
+                        class="search-open icon-link"
+                        type="button"
+                        aria-label="検索を開く"
+                        aria-haspopup="dialog"
+                        aria-controls="article-search"
+                        data-search-open
+                        hidden
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="10.5" cy="10.5" r="7" />
+                            <path d="m16 16 5 5" />
+                        </svg>
+                    </button>
+                    <button
+                        class="theme-toggle icon-link"
+                        type="button"
+                        data-theme-toggle
+                        aria-label="ダークモードに切り替える"
+                        hidden
+                    >
+                        <svg
+                            class="moon-icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+                        </svg>
+                        <svg
+                            class="sun-icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="4"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+                            <path
+                                d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <nav class="main-nav" aria-label="メイン">
+                <a href="/" aria-current="page">
+                    記事
+                </a>
+                <span role="link" aria-disabled="true">
+                    タグ
+                </span>
+                <span role="link" aria-disabled="true">
+                    このブログについて
+                </span>
+            </nav>
+        </div>
+    </header>
+    <dialog
+        id="article-search"
+        class="search-dialog"
+        aria-labelledby="search-title"
+        aria-describedby="search-note"
+    >
+        <h2 id="search-title">記事検索</h2>
+        <p id="search-note">
+            検索は準備中です。記事を探す機能は今後追加します。
+        </p>
+        <input
+            type="search"
+            aria-label="記事を検索（準備中）"
+            placeholder="検索は準備中"
+            disabled
+        />
+        <form method="dialog">
+            <button class="search-close" autofocus>
+                閉じる
+            </button>
+        </form>
+    </dialog>
+    <div class="home-shell">
+        <div class="home-grid">
+            <div class="list-heading">
+                <h1 id="recent-posts-heading">{heading}</h1>
+                <button
+                    type="button"
+                    class="post-sort"
+                    value="desc"
+                    aria-controls="article-list"
+                    disabled
+                >
+                    ↓ 新しい順
+                </button>
+            </div>
+            <div class="sidebar">
+                <section class="profile panel" aria-labelledby="profile-name">
+                    <div class="avatar" aria-hidden="true">
+                        d
+                    </div>
+                    <div class="profile-content">
+                        <h2 id="profile-name">devegoma</h2>
+                        <p>
+                            読んだ本、試した道具。
+                            <br />
+                            日々の学びを記録しています。
+                        </p>
+                        <div class="socials">
+                            <span
+                                class="icon-link"
+                                role="link"
+                                aria-label="RSS（準備中）"
+                                aria-disabled="true"
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle
+                                        cx="5"
+                                        cy="19"
+                                        r="2"
+                                        fill="currentColor"
+                                    />
+                                    <path
+                                        d="M3 10a11 11 0 0 1 11 11M3 3a18 18 0 0 1 18 18"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="3"
+                                    />
+                                </svg>
+                            </span>
+                            <a
+                                class="icon-link"
+                                href="https://github.com/devegoma"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="GitHub"
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path
+                                        fill="currentColor"
+                                        d="M12 .75a11.25 11.25 0 0 0-3.56 21.92c.56.1.77-.24.77-.54v-2.1c-3.13.68-3.79-1.33-3.79-1.33-.51-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.68.08-.68 1.13.08 1.73 1.16 1.73 1.16 1 1.72 2.63 1.22 3.27.93.1-.73.39-1.22.72-1.5-2.5-.29-5.13-1.25-5.13-5.56 0-1.23.44-2.23 1.16-3.02-.12-.28-.5-1.43.11-2.98 0 0 .95-.3 3.1 1.15a10.8 10.8 0 0 1 5.64 0c2.15-1.45 3.1-1.15 3.1-1.15.61 1.55.23 2.7.11 2.98.72.79 1.16 1.79 1.16 3.02 0 4.32-2.63 5.27-5.14 5.55.4.35.76 1.04.76 2.1v3.08c0 .3.2.65.77.54A11.25 11.25 0 0 0 12 .75Z"
+                                    />
+                                </svg>
+                            </a>
+                            <a
+                                class="icon-link"
+                                href="https://x.com/devegoma"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="X"
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path
+                                        d="m4 3 16 18h-4L0 3h4Zm16 0L4 21"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        transform="translate(2 0) scale(.9 1)"
+                                    />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                <section class="preferences" aria-label="タグ">
+                    <div class="tags panel">
+                        <h2>タグ</h2>
+                        <div class="tag-list">
+                            {["TypeScript", "Astro", "Obsidian"].map((tag) => (
+                                <span
+                                    class="tag"
+                                    role="link"
+                                    aria-disabled="true"
+                                >
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <main
+                class="articles-column"
+                id="articles"
+                aria-labelledby="recent-posts-heading"
+            >
+                <div class="article-list" id="article-list">
+                    {visiblePosts.map((post) => (
+                        <article data-date={post.date}>
+                            <div class="article-copy">
+                                <div class="post-meta">
+                                    <time datetime={post.date}>
+                                        {post.date.replaceAll("-", ".")}
+                                    </time>
+                                    <span>{post.tag}</span>
+                                </div>
+                                <h2>
+                                    {post.href ? (
+                                        <a href={post.href}>{post.title}</a>
+                                    ) : (
+                                        post.title
+                                    )}
+                                </h2>
+                                <p>{post.description}</p>
+                                <p class="reading-time">
+                                    {post.minutes}分で読めます
+                                </p>
+                            </div>
+                            <img
+                                class="thumbnail"
+                                src={`/images/sample-${post.image}.png`}
+                                alt=""
+                                width="1672"
+                                height="941"
+                                loading="lazy"
+                            />
+                        </article>
+                    ))}
+                </div>
+                {month ? (
+                    <a class="all-posts" href="/">
+                        最近の記事に戻る
+                    </a>
+                ) : (
+                    <span class="all-posts" role="link" aria-disabled="true">
+                        すべての記事を見る <span aria-hidden="true">→</span>
+                    </span>
+                )}
+            </main>
+            <nav class="archives panel" aria-labelledby="archives-heading">
+                <h2 id="archives-heading">月別アーカイブ</h2>
+                <ul>
+                    {months.map((value) => (
+                        <li>
+                            <a
+                                href={`/archives/${value}/`}
+                                aria-current={
+                                    value === month ? "page" : undefined
+                                }
+                            >
+                                <span>{monthLabel(value)}</span>
+                                <span class="archive-count">
+                                    {
+                                        posts.filter((post) =>
+                                            post.date.startsWith(`${value}-`),
+                                        ).length
+                                    }
+                                    件
+                                </span>
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <footer class="home-footer">
+        <span>© devegoma</span>
+        <small>
+            開発用サンプル · プロフィール・記事・画像は表示確認用です。
+        </small>
+    </footer>
+</HomeLayout>
+
+<script>
+    const sort = document.querySelector<HTMLButtonElement>(".post-sort");
+    const list = document.getElementById("article-list");
+    if (sort && list) {
+        sort.disabled = false;
+        sort.addEventListener("click", () => {
+            sort.value = sort.value === "desc" ? "asc" : "desc";
+            sort.textContent = sort.value === "asc" ? "↑ 古い順" : "↓ 新しい順";
+            const articles = Array.from(list.querySelectorAll("article"));
+            articles.sort((a, b) => {
+                const order = a.dataset.date!.localeCompare(b.dataset.date!);
+                return sort.value === "asc" ? order : -order;
+            });
+            list.append(...articles);
+        });
+    }
+</script>
