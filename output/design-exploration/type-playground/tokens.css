@@ -1,0 +1,11 @@
+:root {
+    --color-bg: #2047ef;
+    --color-text: #ffffff;
+    --color-accent: #ffea64;
+    --color-line: #7992ff;
+    --color-inverse-bg: #ffea64;
+    --color-inverse-text: #162dab;
+    --color-inverse-line: #a6a051;
+    --font-body: "DM Sans", "Noto Sans JP", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+}

@@ -15,12 +15,12 @@
 
 ## 画像一覧
 
-| 画像 | 内容 |
-| --- | --- |
+| 画像                                                 | 内容                           |
+| ---------------------------------------------------- | ------------------------------ |
 | [desktop-light-search.png](desktop-light-search.png) | デスクトップ・検索付き・ライト |
-| [desktop-dark-search.png](desktop-dark-search.png) | デスクトップ・検索付き・ダーク |
-| [mobile-light-search.png](mobile-light-search.png) | モバイル・検索付き・ライト |
-| [mobile-dark-search.png](mobile-dark-search.png) | モバイル・検索付き・ダーク |
+| [desktop-dark-search.png](desktop-dark-search.png)   | デスクトップ・検索付き・ダーク |
+| [mobile-light-search.png](mobile-light-search.png)   | モバイル・検索付き・ライト     |
+| [mobile-dark-search.png](mobile-dark-search.png)     | モバイル・検索付き・ダーク     |
 
 初回の検索なし画像 `desktop-light.png` は、このブランチの収録対象から除外しています。
 
