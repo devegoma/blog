@@ -19,6 +19,7 @@ pnpm dev
 Node.js は `v24.22.1`、pnpm は `12.16.1` が表示されることを確認してください。
 通常は http://localhost:4321/ を開きます。ホームの最初の記事から MDX サンプルへ移動できます。
 Linux でブラウザを導入する場合は `pnpm exec playwright install --with-deps chromium firefox` を使います。
+Windows版Codexから実行する場合は、ブラウザ導入前に下記「Windows版Codexでのブラウザ保存先」を確認してください。
 
 ## コマンド
 
@@ -40,6 +41,29 @@ Playwright は 127.0.0.1:4321 で専用のプレビューを起動します。�
 失敗時は `test-results/` にスクリーンショットと trace を保存します。
 `pnpm exec playwright show-trace <trace.zipのパス>` で操作履歴を確認できます。
 自動再試行は行いません。
+
+### Windows版Codexでのブラウザ保存先
+
+Codexからのファイル操作では、`AppData\Local\ms-playwright` が Codex専用の `LocalCache` 配下へ転送される場合があります。この環境では、Firefoxの起動時にWindowsが元のパスで `mozglue.dll` を探し、エラー14001となっていました。Playwrightでは `browserType.launch: spawn UNKNOWN` と表示されます。通常版Firefoxのインストール先や、Go版Playwrightのディレクトリへ変更しても、このプロジェクトのブラウザ指定とは一致しません。
+
+今回確認した実体の保存先を、ユーザー環境変数 `PLAYWRIGHT_BROWSERS_PATH` に保存する方法は次のとおりです。他の端末では実体パスを確認してから設定してください。
+
+```powershell
+$browserCachePath = Join-Path $env:LOCALAPPDATA 'Packages\OpenAI.Codex_2p2nqsd0c76g0\LocalCache\Local\ms-playwright'
+[Environment]::SetEnvironmentVariable('PLAYWRIGHT_BROWSERS_PATH', $browserCachePath, 'User')
+```
+
+設定後はターミナルとCodexを起動し直してください。すでに開いているPowerShellでは、次のコマンドで保存値を読み込んでからテストします。
+
+```powershell
+$env:PLAYWRIGHT_BROWSERS_PATH = [Environment]::GetEnvironmentVariable('PLAYWRIGHT_BROWSERS_PATH', 'User')
+pnpm exec playwright install chromium firefox
+pnpm test
+```
+
+インストールとテストで同じ保存先を使います。LinuxのCIや他の端末向けに、この端末固有のパスを `playwright.config.ts` へ固定しません。保存先を移動した場合やCodexを削除・再導入した場合は、設定先のブラウザが存在するか確認してください。
+
+実体パスを指定した状態で、Chromium／Firefox × 1280・1920・390pxの全36テストが成功しています。調査の証拠と切り分けは [Firefox起動エラーの調査記録](docs/firefox-startup-investigation.md) を参照してください。
 
 VS Code の推奨拡張と保存時整形設定は `.vscode/` にあります。
 Node.js の型定義には実行環境と同じメジャーの `@types/node` を固定して使用します。

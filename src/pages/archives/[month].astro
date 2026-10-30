@@ -1,0 +1,14 @@
+---
+import HomePage from "../../components/HomePage.astro";
+import { posts } from "../../data/posts";
+
+export function getStaticPaths() {
+    return [...new Set(posts.map((post) => post.date.slice(0, 7)))].map(
+        (month) => ({ params: { month } }),
+    );
+}
+
+const { month } = Astro.params;
+---
+
+<HomePage month={month} />

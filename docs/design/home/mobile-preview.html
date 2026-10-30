@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ja">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ホーム画面・モバイルデザイン確認用</title>
+    <style>
+        @font-face {
+            font-family: "Noto Sans JP";
+            src: url("../../../public/fonts/noto-sans-jp.ttf");
+        }
+        @font-face {
+            font-family: "IBM Plex Mono";
+            src: url("../../../public/fonts/ibm-plex-mono.ttf");
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            --page: #f3f7f8;
+            --panel: #fff;
+            --ink: #172c33;
+            --muted: #526570;
+            --line: #d8e3e6;
+            --accent: #007b8a;
+            --reference: url("reference-light.png");
+            margin: 0;
+            background: var(--page);
+            color: var(--ink);
+            font-family: Arial, "Noto Sans JP", sans-serif;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+        body.dark {
+            --page: #08191f;
+            --panel: #102229;
+            --ink: #fff;
+            --muted: #d8e3e6;
+            --line: #2b515f;
+            --accent: #00e5ef;
+            --reference: url("reference-dark.png");
+        }
+        header {
+            padding: 48px 17px 0;
+            border-bottom: 1px solid var(--line);
+        }
+        /* PC のワードマークを比率を維持して切り出す。 */
+        .wordmark {
+            aspect-ratio: 1316 / 174;
+            background-image: var(--reference);
+            background-size: 109.726444% auto;
+            background-position: 50% 8.752735%;
+        }
+        nav {
+            display: flex;
+            justify-content: flex-end;
+            gap: 27px;
+            margin-top: 20px;
+        }
+        nav span {
+            padding: 0 3px 9px;
+            font-size: 16px;
+        }
+        nav .selected {
+            border-bottom: 3px solid var(--accent);
+            font-weight: 700;
+        }
+        main {
+            margin: 18px 17px 14px;
+        }
+        .heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            margin: 0;
+            font-size: 23px;
+            letter-spacing: -0.04em;
+        }
+        .heading span {
+            color: var(--muted);
+        }
+        .tags {
+            display: flex;
+            gap: 6px;
+            margin: 8px 0 12px;
+        }
+        .tags span {
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 2px 16px;
+        }
+        .articles,
+        .profile {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: var(--panel);
+        }
+        .articles {
+            padding: 0 17px;
+        }
+        article {
+            padding: 17px 0 18px;
+        }
+        article + article {
+            border-top: 1px solid var(--line);
+        }
+        .meta {
+            color: var(--muted);
+            font:
+                12px/1.7 "IBM Plex Mono",
+                monospace;
+        }
+        h2 {
+            margin: 6px 0 10px;
+            font-size: 21px;
+            line-height: 1.5;
+            letter-spacing: -0.025em;
+        }
+        p {
+            margin: 0;
+        }
+        .description {
+            font-size: 15px;
+            line-height: 1.7;
+        }
+        .time {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .more {
+            display: block;
+            margin: 6px 0 8px;
+            color: var(--accent);
+            font-size: 15px;
+        }
+        .profile {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            padding: 12px 17px;
+        }
+        .avatar {
+            flex: 0 0 64px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: url("reference-dark.png") -56.615px -195.692px /
+                888.615px 669.538px;
+        }
+        .profile h2 {
+            margin: -2px 0 2px;
+            font-size: 21px;
+        }
+        .profile p {
+            font-size: 12px;
+        }
+        .socials {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .social {
+            width: 30px;
+            height: 30px;
+            background-image: var(--reference);
+            background-size: 722px 544px;
+            background-position: var(--position) -270px;
+            border-radius: 6px;
+        }
+        .theme-toggle {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            margin-top: 10px;
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            color: var(--ink);
+            background: var(--panel);
+            cursor: pointer;
+        }
+        .theme-toggle:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+        }
+        .theme-toggle svg {
+            width: 26px;
+            height: 26px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .sun,
+        .dark .moon {
+            display: none;
+        }
+        .dark .sun {
+            display: block;
+        }
+        footer {
+            border-top: 1px solid var(--line);
+            padding: 6px 17px 10px;
+            font-size: 12px;
+        }
+    </style>
+    <body>
+        <header>
+            <div class="wordmark" role="img" aria-label="devegoma’s blog"></div>
+            <nav aria-label="メインナビゲーション">
+                <span class="selected" aria-current="page">記事</span
+                ><span>タグ</span><span>紹介</span>
+            </nav>
+        </header>
+        <main>
+            <div class="heading">
+                <h1>最近の記録</h1>
+                <span>新しい順</span>
+            </div>
+            <div class="tags">
+                <span>TypeScript</span><span>Astro</span><span>Obsidian</span>
+            </div>
+            <section class="articles" aria-label="最近の記事">
+                <article>
+                    <div class="meta">2026.10.28　 Obsidian</div>
+                    <h2>読書メモを、<br />あとから使える形にする</h2>
+                    <p class="description">
+                        読んだ内容を、あとで思い出せるように。<br />自分なりの方法とメモの例を紹介します。
+                    </p>
+                    <p class="time">5分で読めます</p>
+                </article>
+                <article>
+                    <div class="meta">2026.10.21　 TypeScript</div>
+                    <h2>小さな自動化を試した記録</h2>
+                    <p class="description">
+                        毎日の作業で繰り返していた手順を見直す。<br />使ったツールと、試してわかったことを残します。
+                    </p>
+                    <p class="time">4分で読めます</p>
+                </article>
+                <article>
+                    <div class="meta">2026.10.14　 Astro</div>
+                    <h2>コードを書く前に、<br />考えておきたいこと</h2>
+                    <p class="description">
+                        実装の前に整理しておくと、あとで楽になること。<br />小さなプロジェクトで意識したいポイント。
+                    </p>
+                    <p class="time">6分で読めます</p>
+                </article>
+            </section>
+            <span class="more">すべての記事を見る →</span>
+            <section class="profile" aria-label="プロフィール">
+                <div
+                    class="avatar"
+                    role="img"
+                    aria-label="devegoma のアバター"
+                ></div>
+                <div>
+                    <h2>devegoma</h2>
+                    <p>
+                        読んだ本、試した道具。<br />日々の学びを記録しています。
+                    </p>
+                    <div class="socials">
+                        <span
+                            class="social"
+                            style="--position: -46px"
+                            role="img"
+                            aria-label="RSS"
+                        ></span>
+                        <span
+                            class="social"
+                            style="--position: -82px"
+                            role="img"
+                            aria-label="GitHub"
+                        ></span>
+                        <span
+                            class="social"
+                            style="--position: -118px"
+                            role="img"
+                            aria-label="X"
+                        ></span>
+                    </div>
+                </div>
+            </section>
+            <button
+                class="theme-toggle"
+                type="button"
+                aria-label="ダークモードに切り替える"
+            >
+                <svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20.8 14A9 9 0 0 1 10 3.2 9 9 0 1 0 20.8 14Z" />
+                </svg>
+                <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4" />
+                    <path
+                        d="M12 1v2m0 18v2M1 12h2m18 0h2M4.2 4.2l1.4 1.4m12.8 12.8 1.4 1.4m0-15.6-1.4 1.4M5.6 18.4l-1.4 1.4"
+                    />
+                </svg>
+            </button>
+        </main>
+        <footer>© devegoma</footer>
+        <script>
+            const toggle = document.querySelector(".theme-toggle");
+            toggle.addEventListener("click", () => {
+                const dark = document.body.classList.toggle("dark");
+                toggle.setAttribute(
+                    "aria-label",
+                    `${dark ? "ライト" : "ダーク"}モードに切り替える`,
+                );
+            });
+        </script>
+    </body>
+</html>
