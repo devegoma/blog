@@ -99,6 +99,7 @@
     flex-shrink: 0;
 }
 .search-dialog {
+    margin: auto;
     width: min(100% - 32px, 480px);
     max-height: calc(100% - 32px);
     padding: 24px;
@@ -254,8 +255,10 @@
     gap: 8px;
     flex-wrap: wrap;
 }
-.archives {
+.archive-sidebar {
     grid-area: archives;
+    display: grid;
+    gap: 16px;
 }
 .archives ul {
     list-style: none;

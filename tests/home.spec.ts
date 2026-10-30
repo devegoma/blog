@@ -45,6 +45,15 @@ test("検索は準備中と分かり、モバイルでは開閉して元のボ�
         await open.press("Enter");
         const dialog = page.getByRole("dialog", { name: "記事検索" });
         await expect(dialog).toBeVisible();
+        const dialogBox = (await dialog.boundingBox())!;
+        expect(dialogBox.x + dialogBox.width / 2).toBeCloseTo(
+            viewport!.width / 2,
+            0,
+        );
+        expect(dialogBox.y + dialogBox.height / 2).toBeCloseTo(
+            viewport!.height / 2,
+            0,
+        );
         await expect(
             dialog.getByText(
                 "検索は準備中です。記事を探す機能は今後追加します。",
@@ -227,8 +236,8 @@ test("画面幅に応じて記事画像とナビ・タグ・プロフィール�
             .getByRole("region", { name: "devegoma", exact: true })
             .boundingBox())!;
         expect(nav.y + nav.height).toBeLessThanOrEqual(profile.y);
-        expect(profile.y + profile.height).toBeLessThanOrEqual(tags.y);
-        expect(tags.y + tags.height).toBeLessThanOrEqual(articles.y);
+        expect(profile.y + profile.height).toBeLessThanOrEqual(articles.y);
+        expect(articles.y + articles.height).toBeLessThanOrEqual(tags.y);
     }
     expect(
         await page.evaluate(
@@ -248,11 +257,6 @@ test("記事を中央に配置し、PCのプロフィールは記事上端から
         Math.abs(list.x + list.width / 2 - viewport!.width / 2),
     ).toBeLessThan(1);
     const profile = page.getByRole("region", { name: "devegoma", exact: true });
-    const tags = page.getByRole("region", { name: "タグ", exact: true });
-    const profileBox = (await profile.boundingBox())!;
-    const tagsBox = (await tags.boundingBox())!;
-    expect(tagsBox.x).toBeCloseTo(profileBox.x, 0);
-    expect(tagsBox.y - profileBox.y - profileBox.height).toBeCloseTo(16, 0);
     if (viewport!.width <= 1199) {
         await expect(page.locator(".sidebar")).toHaveCSS("position", "static");
         return;
@@ -264,11 +268,6 @@ test("記事を中央に配置し、PCのプロフィールは記事上端から
     await expect
         .poll(async () => (await profile.boundingBox())!.y)
         .toBeCloseTo(24, 0);
-    const scrolledProfile = (await profile.boundingBox())!;
-    const scrolledTags = (await tags.boundingBox())!;
-    expect(
-        scrolledTags.y - scrolledProfile.y - scrolledProfile.height,
-    ).toBeCloseTo(16, 0);
     const scrolledList = (await page.locator(".article-list").boundingBox())!;
     expect(scrolledList.y).toBeLessThan(0);
     const footer = (await page.getByRole("contentinfo").boundingBox())!;
@@ -283,6 +282,16 @@ test("月別アーカイブの件数と配置が正しく、月の記事から�
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
     const archives = page.getByRole("navigation", { name: "月別アーカイブ" });
+    const expectTagsBelowArchives = async () => {
+        const archive = (await archives.boundingBox())!;
+        const tags = (await page
+            .getByRole("region", { name: "タグ", exact: true })
+            .boundingBox())!;
+        expect(tags.x).toBeCloseTo(archive.x, 0);
+        expect(tags.width).toBeCloseTo(archive.width, 0);
+        expect(tags.y - archive.y - archive.height).toBeCloseTo(16, 0);
+    };
+    await expectTagsBelowArchives();
     const monthLink = archives.getByRole("link", { name: "2026年10月 3件" });
     await expect(monthLink).toHaveAttribute("href", "/archives/2026-10/");
     const archiveBox = (await archives.boundingBox())!;
@@ -300,6 +309,7 @@ test("月別アーカイブの件数と配置が正しく、月の記事から�
     await monthLink.click();
     await expect(page).toHaveURL("/archives/2026-10/");
     await expect(page).toHaveTitle("2026年10月の記録 | devegoma's blog");
+    await expectTagsBelowArchives();
     await expect(
         page.getByRole("heading", { name: "2026年10月の記録" }),
     ).toBeVisible();
