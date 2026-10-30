@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("トップから MDX 記事を読み、トップに戻れる", async ({ page }) => {
+test("トップから記事を読み、トップに戻れる", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveTitle("記事 | devegoma's blog");
     const heading = page.getByRole("heading", { name: "最近の記録" });
@@ -10,7 +10,10 @@ test("トップから MDX 記事を読み、トップに戻れる", async ({ pag
         .click();
     await expect(page).toHaveURL(/\/posts\/sample\/$/);
     await expect(
-        page.getByRole("heading", { name: "MDX サンプル", exact: true }),
+        page.getByRole("heading", {
+            name: "読書メモを、あとから使える形にする",
+            exact: true,
+        }),
     ).toBeVisible();
     await expect(page.locator("pre code")).toContainText("Hello, Astro!");
     await expect(page.getByRole("table")).toBeVisible();

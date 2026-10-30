@@ -1,0 +1,22 @@
+---
+import { render } from "astro:content";
+import type { InferGetStaticPropsType } from "astro";
+import Layout from "../../layouts/Layout.astro";
+import { getPosts } from "../../data/posts";
+import ArticleTable from "../../components/ArticleTable.astro";
+import CodeBlock from "../../components/CodeBlock.astro";
+
+export async function getStaticPaths() {
+    return (await getPosts()).map((post) => ({
+        params: { id: post.id },
+        props: { post },
+    }));
+}
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { post } = Astro.props;
+const { Content, headings } = await render(post.entry);
+---
+
+<Layout post={post} headings={headings}>
+    <Content components={{ table: ArticleTable, pre: CodeBlock }} />
+</Layout>

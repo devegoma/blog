@@ -1,32 +1,161 @@
 ---
-import "../styles/global.css";
-import { formatPageTitle } from "../utils/page-title.mjs";
+import type { MarkdownHeading } from "astro";
+import HomeLayout from "./HomeLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import Profile from "../components/Profile.astro";
+import TableOfContents from "../components/TableOfContents.astro";
+import { tagLabel } from "../data/tags";
+import { tagHref, type getPosts } from "../data/posts";
+import "../styles/article.css";
 
 interface Props {
-    title: string;
+    post: Awaited<ReturnType<typeof getPosts>>[number];
+    headings: MarkdownHeading[];
 }
-
-const { title } = Astro.props;
-const pageTitle = formatPageTitle(title);
+const { post, headings } = Astro.props;
+const toc = headings.filter(
+    (heading) => heading.depth === 2 || heading.depth === 3,
+);
+const dateLabel = (date: string) => date.replaceAll("-", ".");
 ---
 
-<!doctype html>
-<html lang="ja">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{pageTitle}</title>
-    </head>
-    <body class="bg-white text-slate-900">
-        <div class="mx-auto max-w-3xl px-6 py-10 leading-8">
-            <header class="mb-10">
-                <a class="underline" href="/">
-                    devegoma's blog
-                </a>
-            </header>
-            <main>
-                <slot />
+<HomeLayout
+    title={post.title}
+    description={post.description}
+    mainId="article-content"
+    skipLabel="記事本文へ移動"
+>
+    <SiteHeader />
+    <div class="home-shell article-shell">
+        <nav class="article-breadcrumb" aria-label="パンくず">
+            <a href="/">記事一覧</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{post.title}</span>
+        </nav>
+        <div class="article-grid">
+            <div class="article-author">
+                <Profile />
+            </div>
+            <main
+                id="article-content"
+                tabindex="-1"
+                aria-labelledby="article-title"
+            >
+                <article class="article-paper panel">
+                    <header class="article-heading">
+                        {post.draft && (
+                            <p class="draft-notice">
+                                下書き · 開発プレビュー限定
+                            </p>
+                        )}
+                        <h1 id="article-title">{post.title}</h1>
+                        <div class="article-meta">
+                            {post.date && (
+                                <span>
+                                    公開{" "}
+                                    <time datetime={post.date}>
+                                        {dateLabel(post.date)}
+                                    </time>
+                                </span>
+                            )}
+                            {post.updated && (
+                                <span>
+                                    更新{" "}
+                                    <time datetime={post.updated}>
+                                        {dateLabel(post.updated)}
+                                    </time>
+                                </span>
+                            )}
+                            <span>{post.minutes}分で読めます</span>
+                        </div>
+                        {post.tags.length > 0 && (
+                            <div
+                                class="tag-list article-tags"
+                                aria-label="記事のタグ"
+                            >
+                                {post.tags.map((tag) => (
+                                    <a class="tag" href={tagHref(tag)}>
+                                        {tagLabel(tag)}
+                                    </a>
+                                ))}
+                            </div>
+                        )}
+                    </header>
+                    {toc.length > 0 && (
+                        <details class="mobile-toc panel">
+                            <summary>
+                                目次 <span>{toc.length}項目</span>
+                                <span class="toc-chevron" aria-hidden="true">
+                                    ⌄
+                                </span>
+                            </summary>
+                            <TableOfContents
+                                headings={toc}
+                                label="モバイル目次"
+                            />
+                        </details>
+                    )}
+                    <div class="article-body">
+                        <slot />
+                    </div>
+                    <footer class="article-end">
+                        <a href="/">← 記事一覧に戻る</a>
+                    </footer>
+                </article>
             </main>
+            {toc.length > 0 && (
+                <aside class="article-toc panel" aria-labelledby="toc-title">
+                    <h2 id="toc-title">目次</h2>
+                    <TableOfContents headings={toc} label="目次" />
+                </aside>
+            )}
         </div>
-    </body>
-</html>
+    </div>
+    <footer class="home-footer">
+        <span>© devegoma</span>
+        <small>開発用サンプル · 記事・画像は表示確認用です。</small>
+    </footer>
+</HomeLayout>
+
+<script>
+    const links = [...document.querySelectorAll<HTMLAnchorElement>(".toc a")];
+    const headings = [
+        ...document.querySelectorAll<HTMLElement>(
+            ".article-body h2, .article-body h3",
+        ),
+    ];
+    let scheduled = false;
+    const update = () => {
+        // A short final section may never reach the normal heading threshold.
+        const atBottom =
+            window.scrollY > 0 &&
+            window.scrollY + window.innerHeight >=
+                document.documentElement.scrollHeight - 1;
+        const current = atBottom
+            ? headings.at(-1)
+            : (headings.findLast(
+                  (heading) => heading.getBoundingClientRect().top <= 160,
+              ) ?? headings[0]);
+        for (const link of links) {
+            if (
+                current &&
+                decodeURIComponent(link.hash.slice(1)) === current.id
+            )
+                link.setAttribute("aria-current", "location");
+            else link.removeAttribute("aria-current");
+        }
+        scheduled = false;
+    };
+    window.addEventListener(
+        "scroll",
+        () => {
+            if (!scheduled) {
+                scheduled = true;
+                requestAnimationFrame(update);
+            }
+        },
+        { passive: true },
+    );
+    window.addEventListener("resize", update);
+    update();
+</script>

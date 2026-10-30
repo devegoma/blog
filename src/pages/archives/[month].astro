@@ -1,11 +1,16 @@
 ---
 import HomePage from "../../components/HomePage.astro";
-import { posts } from "../../data/posts";
+import { getPosts } from "../../data/posts";
 
-export function getStaticPaths() {
-    return [...new Set(posts.map((post) => post.date.slice(0, 7)))].map(
-        (month) => ({ params: { month } }),
-    );
+export async function getStaticPaths() {
+    const posts = await getPosts();
+    return [
+        ...new Set(
+            posts
+                .filter((post) => post.date)
+                .map((post) => post.date.slice(0, 7)),
+        ),
+    ].map((month) => ({ params: { month } }));
 }
 
 const { month } = Astro.params;

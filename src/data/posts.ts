@@ -1,31 +1,34 @@
-// 表示確認用データ。本番の記事管理・タグ機能とは別に扱う。
-export const posts = [
-    {
-        title: "読書メモを、あとから使える形にする",
-        date: "2026-10-28",
-        tag: "Obsidian",
-        description:
-            "読んだ内容を、時間が経っても思い出せるように。自分なりの方法と、実際のメモの例を紹介します。",
-        minutes: 5,
-        image: "reading",
-        href: "/posts/sample/",
-    },
-    {
-        title: "小さな自動化を試した記録",
-        date: "2026-10-21",
-        tag: "TypeScript",
-        description:
-            "毎日の作業で繰り返ししていた手順を見直す。使ったツールと、試してわかったことを残します。",
-        minutes: 4,
-        image: "tools",
-    },
-    {
-        title: "コードを書く前に、考えておきたいこと",
-        date: "2026-10-14",
-        tag: "Astro",
-        description:
-            "実装の前に整理しておくと、あとで楽になること。小さなプロジェクトで意識したいポイントをまとめました。",
-        minutes: 6,
-        image: "planning",
-    },
-];
+import { getCollection } from "astro:content";
+
+// Detail pages, lists and tags share this publication boundary.
+export async function getPosts() {
+    const entries = await getCollection(
+        "posts",
+        ({ data }) => import.meta.env.DEV || !data.draft,
+    );
+    const ids = new Set<string>();
+    return entries
+        .map((entry) => {
+            const id = entry.data.slug ?? entry.id;
+            if (ids.has(id)) throw new Error(`記事URLが重複しています: ${id}`);
+            ids.add(id);
+            return {
+                ...entry.data,
+                id,
+                date: entry.data.date ?? "",
+                description: entry.data.description ?? entry.data.title,
+                minutes:
+                    entry.data.minutes ??
+                    Math.max(1, Math.ceil((entry.body?.length ?? 0) / 600)),
+                href: `/posts/${id}/`,
+                entry,
+            };
+        })
+        .sort(
+            (a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id),
+        );
+}
+
+export function tagHref(tag: string) {
+    return `/tags/${encodeURIComponent(tag)}/`;
+}
