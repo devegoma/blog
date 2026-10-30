@@ -6,8 +6,8 @@ import { tags } from "./data/tags";
 const posts = defineCollection({
     loader: glob({
         base: "./src/content/posts",
-        pattern: "*.{md,mdx}",
-        generateId: ({ entry }) => entry.replace(/\.(md|mdx)$/, ""),
+        pattern: "*.mdx",
+        generateId: ({ entry }) => entry.replace(/\.mdx$/, ""),
     }),
     schema: z
         .object({

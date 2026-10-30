@@ -16,6 +16,8 @@ const root = resolve(import.meta.dirname, "..");
 const cli = join(root, "node_modules/astro/bin/astro.mjs");
 const id = `publication-check-${process.pid}`;
 const source = join(root, "src/content/posts", `${id}.mdx`);
+const markdownId = `${id}-markdown`;
+const markdownSource = join(root, "src/content/posts", `${markdownId}.md`);
 await mkdir(join(root, "test-results"), { recursive: true });
 const output = await mkdtemp(join(root, "test-results/publication-"));
 const article = join(output, "posts", id, "index.html");
@@ -65,8 +67,27 @@ async function assertOmitted() {
 }
 
 await writeFile(source, content("Original title"), { flag: "wx" });
+let markdownCreated = false;
 try {
+    await writeFile(
+        markdownSource,
+        content("Unsupported Markdown").replace(
+            `slug: ${id}`,
+            `slug: ${markdownId}`,
+        ),
+        { flag: "wx" },
+    );
+    markdownCreated = true;
     build();
+    await assert.rejects(
+        readFile(join(output, "posts", markdownId, "index.html")),
+        { code: "ENOENT" },
+    );
+    assert(
+        !(await readFile(join(output, "index.html"), "utf8")).includes(
+            "Unsupported Markdown",
+        ),
+    );
     assert((await readFile(article, "utf8")).includes("Original title"));
     for (const [invalid, message] of [
         [content("Invalid").replace(`slug: ${id}\n`, ""), "URL用固定名"],
@@ -106,6 +127,7 @@ try {
     await unlink(source).catch((error) => {
         if (error.code !== "ENOENT") throw error;
     });
+    if (markdownCreated) await unlink(markdownSource);
 }
 
 // Bind an available local port, then start only our own development process.
@@ -147,5 +169,5 @@ try {
     server.kill();
 }
 console.log(
-    "Publication checks passed: stable URL, drafts omitted, deleted pages removed, dev preview available.",
+    "Publication checks passed: MDX-only articles, stable URL, drafts omitted, deleted pages removed, dev preview available.",
 );
