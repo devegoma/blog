@@ -252,8 +252,20 @@ const dateLabel = (date: string) => date.replaceAll("-", ".");
                 event.altKey
             )
                 return;
-            // Run after the browser's native anchor navigation, including same-hash clicks.
-            requestAnimationFrame(selectHashTarget);
+            const heading = headings.find(
+                (heading) =>
+                    heading.id === decodeURIComponent(link.hash.slice(1)),
+            );
+            if (!heading) return;
+            event.preventDefault();
+            // Native same-hash scrolling can finish after a frame in Firefox.
+            // Complete the jump before recording the position used by scroll tracking.
+            heading.scrollIntoView({ behavior: "instant", block: "start" });
+            if (window.location.hash !== link.hash)
+                window.history.pushState(null, "", link.hash);
+            heading.tabIndex = -1;
+            heading.focus({ preventScroll: true });
+            selectHashTarget();
         });
     }
     window.addEventListener("hashchange", () =>

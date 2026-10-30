@@ -38,8 +38,17 @@ test("短い記事でもクリックした途中の目次を維持し、スク�
     await links.last().click();
     await expect(links.last()).toHaveAttribute("aria-current", "location");
     await links.nth(1).click();
-    await links.nth(1).click();
-    await expect(links.nth(1)).toHaveAttribute("aria-current", "location");
+    for (let repeat = 0; repeat < 8; repeat++) {
+        await links.nth(1).click();
+        await page.evaluate(async () => {
+            await new Promise(requestAnimationFrame);
+            await new Promise(requestAnimationFrame);
+        });
+        await expect(links.nth(1)).toHaveAttribute("aria-current", "location");
+        await expect(
+            page.getByRole("heading", { name: "小さく試す", exact: true }),
+        ).toBeFocused();
+    }
     await page.reload();
     const desktopLinks = page.locator(".article-toc .toc a");
     await expect(desktopLinks.nth(1)).toHaveAttribute(
