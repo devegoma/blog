@@ -5,8 +5,16 @@ import { formatPageTitle } from "../utils/page-title.mjs";
 
 interface Props {
     title?: string;
+    description?: string;
+    mainId?: string;
+    skipLabel?: string;
 }
-const { title = "記事" } = Astro.props;
+const {
+    title = "記事",
+    description = "読んだ本、試した道具。日々の学びを記録する devegoma の個人ブログ。",
+    mainId = "articles",
+    skipLabel = "記事一覧へ移動",
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -14,10 +22,7 @@ const { title = "記事" } = Astro.props;
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-            name="description"
-            content="読んだ本、試した道具。日々の学びを記録する devegoma の個人ブログ。"
-        />
+        <meta name="description" content={description} />
         <title>{formatPageTitle(title)}</title>
         <script is:inline>
             (() => {
@@ -87,8 +92,8 @@ const { title = "記事" } = Astro.props;
         </script>
     </head>
     <body class="home-page">
-        <a class="skip-link" href="#articles">
-            記事一覧へ移動
+        <a class="skip-link" href={`#${mainId}`}>
+            {skipLabel}
         </a>
         <slot />
     </body>

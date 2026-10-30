@@ -7,5 +7,6 @@ export default defineConfig({
     output: "static",
     trailingSlash: "always",
     integrations: [mdx()],
+    markdown: { shikiConfig: { theme: "github-dark" } },
     vite: { plugins: [tailwindcss()] },
 });
