@@ -7,16 +7,25 @@ import ArticleTable from "../../components/ArticleTable.astro";
 import CodeBlock from "../../components/CodeBlock.astro";
 
 export async function getStaticPaths() {
-    return (await getPosts()).map((post) => ({
-        params: { id: post.id },
-        props: { post },
-    }));
+    const posts = await getPosts();
+    const published = posts.filter((post) => !post.draft);
+    return posts.map((post) => {
+        const index = published.findIndex((entry) => entry.id === post.id);
+        return {
+            params: { id: post.id },
+            props: {
+                post,
+                previous: index >= 0 ? published[index + 1] : undefined,
+                next: index >= 0 ? published[index - 1] : undefined,
+            },
+        };
+    });
 }
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
-const { post } = Astro.props;
+const { post, previous, next } = Astro.props;
 const { Content, headings } = await render(post.entry);
 ---
 
-<Layout post={post} headings={headings}>
+<Layout post={post} headings={headings} previous={previous} next={next}>
     <Content components={{ table: ArticleTable, pre: CodeBlock }} />
 </Layout>

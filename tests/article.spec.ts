@@ -1,5 +1,143 @@
 import { expect, test } from "@playwright/test";
 
+test("短い記事でもクリックした途中の目次を維持し、スクロールすると選択を更新する", async ({
+    page,
+    viewport,
+}) => {
+    await page.goto("/posts/before-coding/");
+    await page.evaluate(() => document.fonts.ready);
+    const mobile = viewport!.width <= 1199;
+    if (mobile) await page.locator(".mobile-toc summary").click();
+    const toc = page.locator(mobile ? ".mobile-toc .toc" : ".article-toc .toc");
+    const links = toc.locator("a");
+    const seenWhileScrolling = await page.evaluate(async () => {
+        const seen = new Set<string>();
+        const max = document.documentElement.scrollHeight - innerHeight;
+        for (let step = 0; step <= 30; step++) {
+            window.scrollTo(0, (max * step) / 30);
+            await new Promise(requestAnimationFrame);
+            await new Promise(requestAnimationFrame);
+            seen.add(
+                document
+                    .querySelector(".article-toc a[aria-current]")
+                    ?.textContent?.trim() ?? "",
+            );
+        }
+        return [...seen];
+    });
+    expect(seenWhileScrolling).toEqual(
+        expect.arrayContaining([
+            "目的を言葉にする",
+            "小さく試す",
+            "振り返りを残す",
+        ]),
+    );
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await links.nth(1).click();
+    await expect(links.nth(1)).toHaveAttribute("aria-current", "location");
+    await links.last().click();
+    await expect(links.last()).toHaveAttribute("aria-current", "location");
+    await links.nth(1).click();
+    await links.nth(1).click();
+    await expect(links.nth(1)).toHaveAttribute("aria-current", "location");
+    await page.reload();
+    const desktopLinks = page.locator(".article-toc .toc a");
+    await expect(desktopLinks.nth(1)).toHaveAttribute(
+        "aria-current",
+        "location",
+    );
+    await page.goBack();
+    await expect(desktopLinks.last()).toHaveAttribute(
+        "aria-current",
+        "location",
+    );
+    await page.goForward();
+    await expect(desktopLinks.nth(1)).toHaveAttribute(
+        "aria-current",
+        "location",
+    );
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(desktopLinks.first()).toHaveAttribute(
+        "aria-current",
+        "location",
+    );
+    await page.evaluate(() =>
+        window.scrollTo(0, document.documentElement.scrollHeight),
+    );
+    await expect(desktopLinks.last()).toHaveAttribute(
+        "aria-current",
+        "location",
+    );
+
+    await page.setViewportSize({ ...page.viewportSize()!, height: 2000 });
+    await page.goto("/posts/before-coding/");
+    if (mobile) await page.locator(".mobile-toc summary").click();
+    await links.nth(1).click();
+    await expect(links.nth(1)).toHaveAttribute("aria-current", "location");
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+});
+
+test("記事上部の前後ナビで移動でき、先頭・末尾に存在しない記事のリンクを出さない", async ({
+    page,
+    viewport,
+}) => {
+    await page.goto("/posts/automation/");
+    const navigation = page.getByRole("navigation", { name: "前後の記事" });
+    await expect(navigation.locator('[rel="prev"]')).toHaveAttribute(
+        "href",
+        "/posts/before-coding/",
+    );
+    await expect(navigation.locator('[rel="next"]')).toHaveAttribute(
+        "href",
+        "/posts/sample/",
+    );
+    await expect(
+        page.locator(".article-paper > .article-pagination"),
+    ).toBeVisible();
+    await expect(navigation.locator(":scope > *")).toHaveClass([
+        "article-next",
+        "article-index",
+        "article-previous",
+    ]);
+    const mobile = viewport!.width <= 1199;
+    const indexTab = navigation.getByRole("link", {
+        name: "記事一覧",
+        exact: true,
+    });
+    if (mobile) await expect(indexTab).toBeHidden();
+    else await expect(indexTab).toBeVisible();
+    const nextBox = (await navigation.locator(".article-next").boundingBox())!;
+    const previousBox = (await navigation
+        .locator(".article-previous")
+        .boundingBox())!;
+    expect(nextBox.width).toBeCloseTo(previousBox.width, 0);
+    if (!mobile)
+        expect((await indexTab.boundingBox())!.width).toBeCloseTo(
+            nextBox.width,
+            0,
+        );
+    await navigation.locator('[rel="prev"]').click();
+    await expect(page).toHaveURL("/posts/before-coding/");
+    await expect(navigation.locator('[rel="prev"]')).toHaveCount(0);
+    await expect(navigation.getByText("最後の記事です")).toBeVisible();
+    await navigation.locator('[rel="next"]').click();
+    await navigation.locator('[rel="next"]').click();
+    await expect(page).toHaveURL("/posts/sample/");
+    await expect(navigation.locator('[rel="next"]')).toHaveCount(0);
+    await expect(navigation.getByText("最新の記事です")).toBeVisible();
+    await expect(navigation.locator('[rel="prev"]')).toHaveAttribute(
+        "href",
+        "/posts/automation/",
+    );
+    if (mobile)
+        await page.getByRole("link", { name: "← 記事一覧に戻る" }).click();
+    else await indexTab.click();
+    await expect(page).toHaveURL("/");
+    await expect(
+        page.getByRole("heading", { name: "最近の記録" }),
+    ).toBeVisible();
+});
+
 test("最下部まで読むと最後の目次が選択され、上へ戻ると選択も戻る", async ({
     page,
 }) => {

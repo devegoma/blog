@@ -42,7 +42,62 @@
     min-width: 0;
 }
 .article-paper {
-    padding: 36px;
+    --article-padding: 36px;
+    padding: var(--article-padding);
+}
+.article-pagination {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: calc(-1 * var(--article-padding)) calc(-1 * var(--article-padding))
+        28px;
+    border-bottom: 1px solid var(--line);
+    border-radius: 15px 15px 0 0;
+    background: var(--page);
+    overflow: hidden;
+}
+.article-pagination > * {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 18px 20px;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+.article-pagination > * + * {
+    border-left: 1px solid var(--line);
+}
+.article-pagination .article-previous {
+    text-align: right;
+}
+.article-pagination .article-index {
+    align-items: center;
+    min-width: 92px;
+    padding-inline: 16px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.article-pagination a:hover {
+    background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+    text-decoration: none;
+}
+.article-pagination a:focus-visible {
+    outline-offset: -4px;
+}
+.article-pagination-label {
+    color: var(--muted);
+    font-size: 12px;
+}
+.article-pagination-title {
+    font-weight: 700;
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.article-pagination-empty {
+    color: var(--muted);
 }
 .article-heading h1 {
     font-size: clamp(26px, 2.1vw, 34px);
@@ -128,7 +183,7 @@
 }
 .article-body {
     font-size: 17px;
-    line-height: 1.95;
+    line-height: 1.65;
     overflow-wrap: anywhere;
 }
 .article-body > :first-child {
@@ -389,7 +444,20 @@
         display: none;
     }
     .article-paper {
-        padding: 24px 20px;
+        --article-padding: 20px;
+        padding-block: 24px;
+    }
+    .article-pagination {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: -24px;
+        margin-bottom: 24px;
+    }
+    .article-pagination > * {
+        padding: 14px 12px;
+        font-size: 12px;
+    }
+    .article-pagination .article-index {
+        display: none;
     }
     .article-heading h1 {
         font-size: 26px;
@@ -462,6 +530,10 @@
         max-width: 800px;
     }
     .article-paper {
-        padding: 36px;
+        --article-padding: 36px;
+        padding-block: 36px;
+    }
+    .article-pagination {
+        margin-top: -36px;
     }
 }

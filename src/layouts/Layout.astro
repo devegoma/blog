@@ -11,8 +11,13 @@ import "../styles/article.css";
 interface Props {
     post: Awaited<ReturnType<typeof getPosts>>[number];
     headings: MarkdownHeading[];
+    previous?: Pick<
+        Awaited<ReturnType<typeof getPosts>>[number],
+        "title" | "href"
+    >;
+    next?: Pick<Awaited<ReturnType<typeof getPosts>>[number], "title" | "href">;
 }
-const { post, headings } = Astro.props;
+const { post, headings, previous, next } = Astro.props;
 const toc = headings.filter(
     (heading) => heading.depth === 2 || heading.depth === 3,
 );
@@ -42,6 +47,51 @@ const dateLabel = (date: string) => date.replaceAll("-", ".");
                 aria-labelledby="article-title"
             >
                 <article class="article-paper panel">
+                    {!post.draft && (
+                        <nav class="article-pagination" aria-label="前後の記事">
+                            {next ? (
+                                <a
+                                    href={next.href}
+                                    rel="next"
+                                    title={next.title}
+                                    class="article-next"
+                                >
+                                    <span class="article-pagination-label">
+                                        ← 次の記事
+                                    </span>
+                                    <span class="article-pagination-title">
+                                        {next.title}
+                                    </span>
+                                </a>
+                            ) : (
+                                <div class="article-next article-pagination-empty">
+                                    <span>最新の記事です</span>
+                                </div>
+                            )}
+                            <a href="/" class="article-index">
+                                記事一覧
+                            </a>
+                            {previous ? (
+                                <a
+                                    href={previous.href}
+                                    rel="prev"
+                                    title={previous.title}
+                                    class="article-previous"
+                                >
+                                    <span class="article-pagination-label">
+                                        前の記事 →
+                                    </span>
+                                    <span class="article-pagination-title">
+                                        {previous.title}
+                                    </span>
+                                </a>
+                            ) : (
+                                <div class="article-previous article-pagination-empty">
+                                    <span>最後の記事です</span>
+                                </div>
+                            )}
+                        </nav>
+                    )}
                     <header class="article-heading">
                         {post.draft && (
                             <p class="draft-notice">
@@ -125,17 +175,49 @@ const dateLabel = (date: string) => date.replaceAll("-", ".");
         ),
     ];
     let scheduled = false;
+    let anchorSelection: { heading: HTMLElement; scrollY: number } | undefined;
     const update = () => {
+        // Keep a clicked heading selected even when its anchor scroll is clamped.
+        if (
+            anchorSelection &&
+            Math.abs(window.scrollY - anchorSelection.scrollY) > 1
+        )
+            anchorSelection = undefined;
         // A short final section may never reach the normal heading threshold.
         const atBottom =
             window.scrollY > 0 &&
             window.scrollY + window.innerHeight >=
                 document.documentElement.scrollHeight - 1;
-        const current = atBottom
-            ? headings.at(-1)
-            : (headings.findLast(
-                  (heading) => heading.getBoundingClientRect().top <= 160,
-              ) ?? headings[0]);
+        const scrollLimit = Math.max(
+            0,
+            document.documentElement.scrollHeight - window.innerHeight,
+        );
+        const offsets = headings.map((heading) =>
+            Math.max(
+                0,
+                heading.getBoundingClientRect().top + window.scrollY - 160,
+            ),
+        );
+        const lastOffset = offsets.at(-1) ?? 0;
+        // Fit otherwise unreachable trailing headings into the remaining scroll range.
+        const tailStart =
+            offsets.findLast((offset) => offset < scrollLimit) ?? 0;
+        const tailScale =
+            lastOffset > scrollLimit && scrollLimit > tailStart
+                ? (scrollLimit - tailStart) / (lastOffset - tailStart)
+                : 1;
+        const current =
+            anchorSelection?.heading ??
+            (atBottom
+                ? headings.at(-1)
+                : (headings.findLast((_, index) => {
+                      const offset = offsets[index];
+                      const trigger =
+                          offset > tailStart
+                              ? tailStart + (offset - tailStart) * tailScale
+                              : offset;
+                      return trigger <= window.scrollY + 1;
+                  }) ?? headings[0]));
         for (const link of links) {
             if (
                 current &&
@@ -146,6 +228,40 @@ const dateLabel = (date: string) => date.replaceAll("-", ".");
         }
         scheduled = false;
     };
+    const selectHashTarget = () => {
+        const link = links.find((link) => link.hash === window.location.hash);
+        const heading =
+            link &&
+            headings.find(
+                (heading) =>
+                    heading.id === decodeURIComponent(link.hash.slice(1)),
+            );
+        anchorSelection = heading
+            ? { heading, scrollY: window.scrollY }
+            : undefined;
+        update();
+    };
+    for (const link of links) {
+        link.addEventListener("click", (event) => {
+            if (
+                event.defaultPrevented ||
+                event.button !== 0 ||
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey ||
+                event.altKey
+            )
+                return;
+            // Run after the browser's native anchor navigation, including same-hash clicks.
+            requestAnimationFrame(selectHashTarget);
+        });
+    }
+    window.addEventListener("hashchange", () =>
+        requestAnimationFrame(selectHashTarget),
+    );
+    window.addEventListener("load", () =>
+        requestAnimationFrame(selectHashTarget),
+    );
     window.addEventListener(
         "scroll",
         () => {
@@ -157,5 +273,5 @@ const dateLabel = (date: string) => date.replaceAll("-", ".");
         { passive: true },
     );
     window.addEventListener("resize", update);
-    update();
+    selectHashTarget();
 </script>
