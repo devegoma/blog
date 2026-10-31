@@ -1,35 +1,5 @@
 ---
-import HomeLayout from "../../layouts/HomeLayout.astro";
-import SiteHeader from "../../components/SiteHeader.astro";
-import { tagLabel } from "../../data/tags";
-import { getPosts, tagHref } from "../../data/posts";
-const posts = await getPosts();
-const tags = [...new Set(posts.flatMap((post) => post.tags))].sort();
+import TagPage from "../../components/TagPage.astro";
 ---
 
-<HomeLayout title="タグ">
-    <SiteHeader active="tags" />
-    <main
-        id="articles"
-        class="home-shell"
-        style="padding-block: 48px; min-height: 60vh"
-    >
-        <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 24px">
-            タグ
-        </h1>
-        <div class="tag-list">
-            {tags.map((tag) => (
-                <a class="tag" href={tagHref(tag)}>
-                    {tagLabel(tag)} ·{" "}
-                    {posts.filter((post) => post.tags.includes(tag)).length}件
-                </a>
-            ))}
-        </div>
-        <a href="/" class="all-posts">
-            記事一覧に戻る →
-        </a>
-    </main>
-    <footer class="home-footer">
-        <span>© devegoma</span>
-    </footer>
-</HomeLayout>
+<TagPage />

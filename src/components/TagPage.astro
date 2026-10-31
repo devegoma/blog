@@ -1,0 +1,229 @@
+---
+import HomeLayout from "../layouts/HomeLayout.astro";
+import SiteHeader from "./SiteHeader.astro";
+import ArticleList from "./ArticleList.astro";
+import { getPosts, tagHref } from "../data/posts";
+import { tagLabel, tags as definitions } from "../data/tags";
+import "../styles/tags.css";
+
+interface Props {
+    tag?: string;
+    page?: number;
+}
+const { tag, page = 1 } = Astro.props;
+const posts = await getPosts({ includeDrafts: false });
+const tags = Object.keys(definitions)
+    .map((id) => ({
+        id,
+        label: tagLabel(id),
+        count: posts.filter((post) => post.tags.includes(id)).length,
+    }))
+    .filter(({ count }) => count > 0)
+    .sort((a, b) => a.label.localeCompare(b.label, "ja"));
+const selectedPosts = tag
+    ? posts.filter((post) => post.tags.includes(tag))
+    : [];
+const total = selectedPosts.length;
+const pageCount = Math.ceil(total / 10);
+const heading = tag ? `${tagLabel(tag)}の記事` : "タグから探す";
+const pageHref = (value: number) =>
+    `${tagHref(tag!)}${value === 1 ? "" : `page/${value}/`}`;
+---
+
+<HomeLayout
+    title={page > 1 ? `${heading} - ${page}ページ目` : heading}
+    mainId={tag ? "results" : "tags-main"}
+    skipLabel={tag ? "記事一覧へ移動" : "タグ一覧へ移動"}
+>
+    <SiteHeader active="tags" />
+    <main
+        id="tags-main"
+        class:list={["home-shell", "tags-main", { "tag-selected": tag }]}
+    >
+        <div class="tag-page-title">
+            {tag && (
+                <a class="tag-back" href="/tags/">
+                    ← タグ一覧
+                </a>
+            )}
+            <h1>{heading}</h1>
+            <p>
+                {tag
+                    ? `「${tagLabel(tag)}」を持つ公開記事 ${total}件`
+                    : "気になるテーマから、日々の記録をたどる。"}
+            </p>
+        </div>
+        <div class="tag-page-grid">
+            {tags.length > 0 && (
+                <section
+                    class="tag-chooser panel"
+                    aria-labelledby="choose-title"
+                >
+                    <div class="chooser-heading">
+                        <h2 id="choose-title">
+                            {tag ? "タグを変更" : "タグを選ぶ"}
+                        </h2>
+                        {tag ? (
+                            <a class="tag-clear" href="/tags/">
+                                選択を解除 ×
+                            </a>
+                        ) : (
+                            <small>{tags.length}タグ</small>
+                        )}
+                    </div>
+                    <nav
+                        id="tag-options"
+                        class="tag-options"
+                        aria-label="タグを選ぶ"
+                    >
+                        {tags.map(({ id, label, count }) => (
+                            <a
+                                class="tag-option"
+                                href={tagHref(id)}
+                                aria-current={id === tag ? "page" : undefined}
+                            >
+                                <span class="tag-symbol" aria-hidden="true">
+                                    {id === tag ? "✓" : "#"}
+                                </span>
+                                <span class="tag-name">{label}</span>
+                                <span class="tag-count">{count}件</span>
+                            </a>
+                        ))}
+                    </nav>
+                    <button
+                        class="tag-more"
+                        type="button"
+                        aria-controls="tag-options"
+                        aria-expanded="false"
+                        hidden
+                    >
+                        すべてのタグを表示
+                    </button>
+                    <p class="tag-hint">
+                        公開記事のあるタグだけを表示しています。
+                        {!tag && (
+                            <>
+                                <br />
+                                件数は、そのタグの公開記事数です。
+                            </>
+                        )}
+                    </p>
+                </section>
+            )}
+            {tag ? (
+                <section
+                    id="results"
+                    class="tag-results"
+                    aria-labelledby="results-heading"
+                    tabindex="-1"
+                >
+                    <div class="tag-result-heading">
+                        <h2 id="results-heading">
+                            記事一覧 <small>{total}件</small>
+                        </h2>
+                        <span>↓ 新しい順</span>
+                    </div>
+                    <ArticleList
+                        posts={selectedPosts.slice((page - 1) * 10, page * 10)}
+                        tagsAfter
+                    />
+                    <p class="tag-range">
+                        {total}件中 {(page - 1) * 10 + 1}–
+                        {Math.min(page * 10, total)}件を表示
+                    </p>
+                    {pageCount > 1 && (
+                        <nav class="tag-pagination" aria-label="ページ送り">
+                            {page > 1 ? (
+                                <a href={pageHref(page - 1)} rel="prev">
+                                    ← 前のページ
+                                </a>
+                            ) : (
+                                <span aria-disabled="true">← 前のページ</span>
+                            )}
+                            <span
+                                aria-current="page"
+                                aria-label={`${pageCount}ページ中${page}ページ目`}
+                            >
+                                {page} / {pageCount}
+                            </span>
+                            {page < pageCount ? (
+                                <a href={pageHref(page + 1)} rel="next">
+                                    次のページ →
+                                </a>
+                            ) : (
+                                <span aria-disabled="true">次のページ →</span>
+                            )}
+                        </nav>
+                    )}
+                    <div class="tag-bottom-links">
+                        <a href="/tags/">タグ一覧へ戻る</a>
+                        <a href="#tags-main">ページの先頭 ↑</a>
+                    </div>
+                </section>
+            ) : (
+                <section
+                    class="tag-empty panel"
+                    aria-labelledby="tag-empty-heading"
+                >
+                    <span class="tag-empty-mark" aria-hidden="true">
+                        #
+                    </span>
+                    <h2 id="tag-empty-heading">
+                        {tags.length
+                            ? "気になるタグを選んでください"
+                            : "タグはまだありません"}
+                    </h2>
+                    <p>
+                        {tags.length ? (
+                            <>
+                                選んだテーマの記事が、
+                                <br />
+                                ここに表示されます。
+                            </>
+                        ) : (
+                            "タグ付きの記事が公開されると、ここに表示されます。"
+                        )}
+                    </p>
+                    {!tags.length && (
+                        <a class="tag-back" href="/">
+                            記事一覧へ戻る →
+                        </a>
+                    )}
+                </section>
+            )}
+        </div>
+    </main>
+    <footer class="home-footer">
+        <span>© devegoma</span>
+        <small>
+            開発用サンプル · プロフィール・記事・画像は表示確認用です。
+        </small>
+    </footer>
+</HomeLayout>
+
+<script>
+    const chooser = document.querySelector<HTMLElement>(".tag-chooser");
+    const toggle = chooser?.querySelector<HTMLButtonElement>(".tag-more");
+    const options = chooser?.querySelectorAll(".tag-option");
+    if (chooser && toggle && options && options.length > 3) {
+        chooser.dataset.collapsible = "true";
+        chooser.toggleAttribute("data-overflow-desktop", options.length > 10);
+        toggle.hidden = false;
+        const expand = (expanded: boolean) => {
+            chooser.dataset.expanded = String(expanded);
+            toggle.setAttribute("aria-expanded", String(expanded));
+            toggle.textContent = expanded
+                ? "タグを折りたたむ"
+                : "すべてのタグを表示";
+        };
+        const selected = Array.from(options).findIndex((option) =>
+            option.hasAttribute("aria-current"),
+        );
+        expand(
+            selected >= (matchMedia("(min-width: 1200px)").matches ? 10 : 3),
+        );
+        toggle.addEventListener("click", () =>
+            expand(toggle.getAttribute("aria-expanded") !== "true"),
+        );
+    }
+</script>
