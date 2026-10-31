@@ -1,10 +1,10 @@
 import { getCollection } from "astro:content";
 
 // Detail pages, lists and tags share this publication boundary.
-export async function getPosts() {
+export async function getPosts({ includeDrafts = import.meta.env.DEV } = {}) {
     const entries = await getCollection(
         "posts",
-        ({ data }) => import.meta.env.DEV || !data.draft,
+        ({ data }) => includeDrafts || !data.draft,
     );
     const ids = new Set<string>();
     return entries
