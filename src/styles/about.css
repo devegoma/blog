@@ -1,0 +1,229 @@
+main.about {
+    max-width: 640px;
+    margin: 24px auto 0;
+    padding: 0 16px;
+    overflow-wrap: anywhere;
+}
+.about h1 {
+    font-size: 26px;
+    line-height: 1.5;
+    margin: 0 0 20px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+}
+.about-card {
+    padding: 24px;
+}
+.identity {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.identity .avatar {
+    flex: 0 0 72px;
+    width: 72px;
+    height: 72px;
+    font-size: 50px;
+    margin: 0;
+}
+.identity h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+.eyebrow {
+    font:
+        12px/1.5 "IBM Plex Mono",
+        monospace;
+    color: var(--muted);
+    margin: 0 0 3px;
+    letter-spacing: 0.1em;
+}
+.intro {
+    font-size: 16px;
+    line-height: 1.95;
+    margin: 24px 0 28px;
+}
+.links-section {
+    border-top: 1px solid var(--line);
+    padding-top: 24px;
+}
+.links-section h3 {
+    font-size: 16px;
+    margin: 0 0 14px;
+    font-weight: 700;
+}
+.external {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 76px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: var(--ink);
+}
+.external + .external {
+    margin-top: 12px;
+}
+.external svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+.external strong {
+    font-size: 16px;
+    display: block;
+}
+.external small {
+    font:
+        12px/1.6 "IBM Plex Mono",
+        monospace;
+    color: var(--muted);
+    display: block;
+    overflow-wrap: anywhere;
+}
+.external .arrow {
+    margin-left: auto;
+    color: var(--accent);
+    font-size: 22px;
+}
+.external:hover {
+    border-color: var(--accent);
+}
+.new-tab {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin: 12px 0 0;
+}
+.back-home {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    margin: 24px 0 0;
+    background: var(--panel);
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+}
+.about-footer {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 32px 16px 0;
+    padding: 20px 0 24px;
+    border-top: 1px solid var(--line);
+    font-family: "IBM Plex Mono", monospace;
+}
+.about-page .main-nav a {
+    min-height: 48px;
+    min-width: 44px;
+}
+.about-page .wordmark {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+@media (max-width: 350px) {
+    .about-card {
+        padding: 20px;
+    }
+    .about-page .main-nav {
+        gap: 16px;
+    }
+    .identity h2 {
+        font-size: 22px;
+    }
+    .identity .avatar {
+        width: 64px;
+        height: 64px;
+        flex-basis: 64px;
+        font-size: 44px;
+    }
+    .external {
+        padding: 12px;
+    }
+    .external small {
+        font-size: 11px;
+    }
+}
+@media (min-width: 1200px) {
+    main.about {
+        max-width: 1040px;
+        width: calc(100% - 96px);
+        padding: 0;
+        margin-top: 48px;
+    }
+    .about h1 {
+        font-size: 32px;
+        margin-bottom: 24px;
+    }
+    .about-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 392px);
+        grid-template-rows: min-content 1fr;
+        grid-template-areas: "identity links" "intro links";
+        column-gap: 48px;
+        padding: 40px;
+    }
+    .identity {
+        grid-area: identity;
+        gap: 20px;
+    }
+    .identity .avatar {
+        width: 96px;
+        height: 96px;
+        flex-basis: 96px;
+        font-size: 68px;
+    }
+    .identity h2 {
+        font-size: 28px;
+    }
+    .intro {
+        grid-area: intro;
+        font-size: 17px;
+        margin: 24px 0 0;
+    }
+    .links-section {
+        grid-area: links;
+        border-top: 0;
+        border-left: 1px solid var(--line);
+        padding: 0 0 0 40px;
+        min-width: 0;
+    }
+    .links-section h3 {
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+    .external {
+        min-height: 80px;
+    }
+    .back-home {
+        width: 192px;
+        justify-content: center;
+        margin-top: 24px;
+    }
+    .about-footer {
+        margin: 80px 0 0;
+        padding: 24px max(48px, calc((100vw - 1440px) / 2));
+        font-size: 14px;
+    }
+}
+
+.about-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.about-footer small {
+    font-family: "DM Sans", "Noto Sans JP", sans-serif;
+    font-size: 12px;
+}
