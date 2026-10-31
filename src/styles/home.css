@@ -61,7 +61,7 @@
     gap: 12px;
     padding: 0 14px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 5px;
     background: var(--page);
     color: var(--muted);
 }
@@ -104,7 +104,7 @@
     max-height: calc(100% - 32px);
     padding: 24px;
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: 8px;
     background: var(--panel);
     color: var(--ink);
     overflow-wrap: anywhere;
@@ -123,7 +123,7 @@
     width: 100%;
     padding-inline: 12px;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 4px;
     background: var(--page);
 }
 .search-dialog form {
@@ -134,7 +134,7 @@
     min-width: 88px;
     min-height: 44px;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 4px;
     background: var(--panel);
     color: var(--ink);
     font: inherit;
@@ -164,6 +164,9 @@
 }
 .sidebar {
     grid-area: sidebar;
+}
+.sidebar,
+.archive-sidebar {
     display: grid;
     gap: 16px;
     position: sticky;
@@ -177,7 +180,7 @@
 .panel,
 .article-list {
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: 8px;
     background: var(--panel);
 }
 .avatar {
@@ -213,7 +216,7 @@
     width: 48px;
     height: 48px;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: 6px;
     color: var(--ink);
 }
 .icon-link svg {
@@ -257,8 +260,6 @@
 }
 .archive-sidebar {
     grid-area: archives;
-    display: grid;
-    gap: 16px;
 }
 .archives ul {
     list-style: none;
@@ -314,10 +315,12 @@
     margin: 0;
 }
 .post-sort {
+    width: 120px;
+    flex-shrink: 0;
     min-height: 44px;
     padding: 8px 12px;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 4px;
     background: var(--panel);
     color: var(--muted);
     font: inherit;
@@ -382,7 +385,7 @@
     height: auto;
     aspect-ratio: 16 / 9;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: 6px;
 }
 .all-posts {
     display: block;
@@ -512,7 +515,7 @@
         width: 34%;
         max-width: 140px;
         align-self: flex-start;
-        border-radius: 8px;
+        border-radius: 4px;
     }
     .article-copy h2 {
         font-size: 17px;
@@ -527,7 +530,8 @@
         font-size: 13px;
         gap: 6px 12px;
     }
-    .sidebar {
+    .sidebar,
+    .archive-sidebar {
         position: static;
         max-height: none;
         overflow-y: visible;

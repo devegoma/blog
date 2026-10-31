@@ -12,7 +12,7 @@
 .article-breadcrumb a {
     flex-shrink: 0;
 }
-.article-shell a {
+.article-shell a:where(:not(.icon-link)) {
     color: var(--accent);
     text-underline-offset: 4px;
 }
@@ -51,7 +51,7 @@
     margin: calc(-1 * var(--article-padding)) calc(-1 * var(--article-padding))
         28px;
     border-bottom: 1px solid var(--line);
-    border-radius: 15px 15px 0 0;
+    border-radius: 7px 7px 0 0;
     background: var(--page);
     overflow: hidden;
 }
@@ -232,7 +232,7 @@
 .article-body img {
     width: 100%;
     height: auto;
-    border-radius: 10px;
+    border-radius: 5px;
     margin-block: 28px;
 }
 .article-body figure {
@@ -252,7 +252,7 @@
     padding: 4px 20px;
     color: var(--muted);
     background: var(--page);
-    border-radius: 0 10px 10px 0;
+    border-radius: 0 5px 5px 0;
 }
 .article-body aside {
     --callout-color: #2563eb;
@@ -262,7 +262,7 @@
     padding: 16px 20px;
     border: 1px solid color-mix(in srgb, var(--callout-color) 35%, var(--panel));
     border-left: 4px solid var(--callout-color);
-    border-radius: 10px;
+    border-radius: 5px;
     background: color-mix(in srgb, var(--callout-color) 7%, var(--panel));
 }
 .article-body aside[data-color="red"] {
@@ -324,7 +324,7 @@
     min-width: 0;
     margin-block: 24px;
     border: 1px solid #304550;
-    border-radius: 10px;
+    border-radius: 5px;
     background: #0d1117;
     color: #edf5f7;
 }
@@ -379,7 +379,7 @@
     max-width: 100%;
     margin-block: 24px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 5px;
 }
 .article-body table {
     border-collapse: collapse;
@@ -472,17 +472,16 @@
     .mobile-toc {
         display: block;
         margin-bottom: 28px;
-        background: var(--page);
     }
     .mobile-toc summary {
         display: flex;
         align-items: center;
         gap: 12px;
-        min-height: 48px;
-        padding: 12px 16px;
+        min-height: 44px;
+        padding: 8px 16px;
         cursor: pointer;
-        font-size: 14px;
-        font-weight: 700;
+        font-size: 18px;
+        font-weight: 800;
         list-style: none;
     }
     .mobile-toc summary::-webkit-details-marker {
@@ -501,10 +500,7 @@
         transform: rotate(180deg);
     }
     .mobile-toc .toc {
-        padding: 0 16px 16px;
-    }
-    .mobile-toc .toc a {
-        min-height: 44px;
+        padding: 0 16px 8px;
     }
     .article-body {
         font-size: 16px;
