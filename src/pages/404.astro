@@ -1,0 +1,39 @@
+---
+import HomeLayout from "../layouts/HomeLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import "../styles/not-found.css";
+---
+
+<HomeLayout
+    title="ページが見つかりません"
+    description="お探しのページは存在しないか、移動または削除された可能性があります。"
+    mainId="not-found"
+    skipLabel="本文へ移動"
+>
+    <div class="not-found-page">
+        <SiteHeader active="none" />
+        <main id="not-found" class="error-main home-shell" tabindex="-1">
+            <section class="error-panel panel" aria-labelledby="error-title">
+                <p class="error-code">
+                    404 <span>/ NOT FOUND</span>
+                </p>
+                <h1 id="error-title">
+                    <span>ページが</span>
+                    <span>見つかりません</span>
+                </h1>
+                <p class="error-description">
+                    お探しのページは存在しないか、移動または削除された可能性があります。
+                </p>
+                <a class="home-action" href="/">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m12 5-7 7 7 7M5 12h14"></path>
+                    </svg>
+                    ホームに戻る
+                </a>
+            </section>
+        </main>
+        <footer class="home-footer">
+            <span>© devegoma</span>
+        </footer>
+    </div>
+</HomeLayout>
