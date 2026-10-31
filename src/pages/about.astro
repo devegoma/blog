@@ -1,0 +1,86 @@
+---
+import HomeLayout from "../layouts/HomeLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import "../styles/about.css";
+---
+
+<HomeLayout title="このブログについて" mainId="about" skipLabel="本文へ移動">
+    <div class="about-page">
+        <SiteHeader active="about" />
+        <main id="about" class="about">
+            <h1>このブログについて</h1>
+            <section class="panel about-card" aria-labelledby="author">
+                <div class="identity">
+                    <div class="avatar" aria-hidden="true">
+                        d
+                    </div>
+                    <div>
+                        <p class="eyebrow">PROFILE</p>
+                        <h2 id="author">devegoma</h2>
+                    </div>
+                </div>
+                <p class="intro">
+                    読んだ本、試した道具。
+                    <br />
+                    日々の学びを記録しています。
+                </p>
+                <section class="links-section" aria-labelledby="elsewhere">
+                    <h3 id="elsewhere">外部リンク</h3>
+                    <a
+                        class="external"
+                        href="https://github.com/devegoma"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="GitHub · devegoma（新しいタブで開く）"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path
+                                fill="currentColor"
+                                d="M12 .75a11.25 11.25 0 0 0-3.56 21.92c.56.1.77-.24.77-.54v-2.1c-3.13.68-3.79-1.33-3.79-1.33-.51-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.68.08-.68 1.13.08 1.73 1.16 1.73 1.16 1 1.72 2.63 1.22 3.27.93.1-.73.39-1.22.72-1.5-2.5-.29-5.13-1.25-5.13-5.56 0-1.23.44-2.23 1.16-3.02-.12-.28-.5-1.43.11-2.98 0 0 .95-.3 3.1 1.15a10.8 10.8 0 0 1 5.64 0c2.15-1.45 3.1-1.15 3.1-1.15.61 1.55.23 2.7.11 2.98.72.79 1.16 1.79 1.16 3.02 0 4.32-2.63 5.27-5.14 5.55.4.35.76 1.04.76 2.1v3.08c0 .3.2.65.77.54A11.25 11.25 0 0 0 12 .75Z"
+                            />
+                        </svg>
+                        <span>
+                            <strong>GitHub</strong>
+                            <small>github.com/devegoma</small>
+                        </span>
+                        <span class="arrow" aria-hidden="true">
+                            ↗
+                        </span>
+                    </a>
+                    <a
+                        class="external"
+                        href="https://x.com/devegoma"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="X · devegoma（新しいタブで開く）"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path
+                                d="m4 3 16 18h-4L0 3h4Zm16 0L4 21"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                transform="translate(2 0) scale(.9 1)"
+                            />
+                        </svg>
+                        <span>
+                            <strong>X</strong>
+                            <small>x.com/devegoma</small>
+                        </span>
+                        <span class="arrow" aria-hidden="true">
+                            ↗
+                        </span>
+                    </a>
+                    <p class="new-tab">外部リンクは新しいタブで開きます。</p>
+                </section>
+            </section>
+            <a class="back-home" href="/">
+                <span aria-hidden="true">←</span> ホームへ戻る
+            </a>
+        </main>
+        <footer class="about-footer">
+            <span>© devegoma</span>
+            <small>開発用サンプル。プロフィールは表示確認用です。</small>
+        </footer>
+    </div>
+</HomeLayout>
