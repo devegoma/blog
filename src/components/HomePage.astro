@@ -3,6 +3,7 @@ import HomeLayout from "../layouts/HomeLayout.astro";
 
 import SiteHeader from "./SiteHeader.astro";
 import Profile from "./Profile.astro";
+import ArticleList from "./ArticleList.astro";
 import { tagLabel } from "../data/tags";
 import { getPosts, tagHref } from "../data/posts";
 
@@ -61,48 +62,7 @@ const visiblePosts = tag
                 id="articles"
                 aria-labelledby="recent-posts-heading"
             >
-                <div class="article-list" id="article-list">
-                    {visiblePosts.map((post) => (
-                        <article data-date={post.date}>
-                            <div class="article-copy">
-                                <div class="post-meta">
-                                    {post.date && (
-                                        <time datetime={post.date}>
-                                            {post.date.replaceAll("-", ".")}
-                                        </time>
-                                    )}
-                                    {post.draft && <span>下書き</span>}
-                                    {post.tags.map((tag) => (
-                                        <a href={tagHref(tag)}>
-                                            {tagLabel(tag)}
-                                        </a>
-                                    ))}
-                                </div>
-                                <h2>
-                                    {post.href ? (
-                                        <a href={post.href}>{post.title}</a>
-                                    ) : (
-                                        post.title
-                                    )}
-                                </h2>
-                                <p>{post.description}</p>
-                                <p class="reading-time">
-                                    {post.minutes}分で読めます
-                                </p>
-                            </div>
-                            {post.image && (
-                                <img
-                                    class="thumbnail"
-                                    src={post.image}
-                                    alt=""
-                                    width="1672"
-                                    height="941"
-                                    loading="lazy"
-                                />
-                            )}
-                        </article>
-                    ))}
-                </div>
+                <ArticleList posts={visiblePosts} />
                 {month || tag ? (
                     <a class="all-posts" href="/">
                         最近の記事に戻る

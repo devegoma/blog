@@ -1,0 +1,53 @@
+---
+import { getPosts, tagHref } from "../data/posts";
+import { tagLabel } from "../data/tags";
+
+interface Props {
+    posts: Awaited<ReturnType<typeof getPosts>>;
+    tagsAfter?: boolean;
+}
+const { posts, tagsAfter = false } = Astro.props;
+---
+
+<div class="article-list" id="article-list">
+    {posts.map((post) => (
+        <article data-date={post.date}>
+            <div class="article-copy">
+                <div class="post-meta">
+                    {post.date && (
+                        <time datetime={post.date}>
+                            {post.date.replaceAll("-", ".")}
+                        </time>
+                    )}
+                    {post.draft && <span>下書き</span>}
+                    {!tagsAfter &&
+                        post.tags.map((tag) => (
+                            <a href={tagHref(tag)}>{tagLabel(tag)}</a>
+                        ))}
+                </div>
+                <h2>
+                    <a href={post.href}>{post.title}</a>
+                </h2>
+                <p>{post.description}</p>
+                <p class="reading-time">{post.minutes}分で読めます</p>
+                {tagsAfter && (
+                    <div class="result-tags">
+                        {post.tags.map((tag) => (
+                            <a href={tagHref(tag)}>{tagLabel(tag)}</a>
+                        ))}
+                    </div>
+                )}
+            </div>
+            {post.image && (
+                <img
+                    class="thumbnail"
+                    src={post.image}
+                    alt=""
+                    width="1672"
+                    height="941"
+                    loading="lazy"
+                />
+            )}
+        </article>
+    ))}
+</div>
