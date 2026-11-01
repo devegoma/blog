@@ -1,0 +1,74 @@
+[
+    {
+        "browser": "chromium",
+        "width": 1440,
+        "theme": "light",
+        "result": "passed"
+    },
+    {
+        "browser": "chromium",
+        "width": 1440,
+        "theme": "dark",
+        "result": "passed"
+    },
+    {
+        "browser": "chromium",
+        "width": 390,
+        "theme": "light",
+        "result": "passed"
+    },
+    {
+        "browser": "chromium",
+        "width": 390,
+        "theme": "dark",
+        "result": "passed"
+    },
+    {
+        "browser": "chromium",
+        "width": 320,
+        "theme": "light",
+        "result": "passed"
+    },
+    {
+        "browser": "chromium",
+        "width": 320,
+        "theme": "dark",
+        "result": "passed"
+    },
+    {
+        "browser": "firefox",
+        "width": 1440,
+        "theme": "light",
+        "result": "passed"
+    },
+    {
+        "browser": "firefox",
+        "width": 1440,
+        "theme": "dark",
+        "result": "passed"
+    },
+    {
+        "browser": "firefox",
+        "width": 390,
+        "theme": "light",
+        "result": "passed"
+    },
+    {
+        "browser": "firefox",
+        "width": 390,
+        "theme": "dark",
+        "result": "passed"
+    },
+    {
+        "browser": "firefox",
+        "width": 320,
+        "theme": "light",
+        "result": "passed"
+    },
+    {
+        "browser": "firefox",
+        "width": 320,
+        "theme": "dark",
+        "result": "passed"
+    }
+]
