@@ -1,4 +1,5 @@
 import { getCollection } from "astro:content";
+import { comparePosts } from "../utils/post-order.mjs";
 
 // Detail pages, lists and tags share this publication boundary.
 export async function getPosts({ includeDrafts = import.meta.env.DEV } = {}) {
@@ -21,9 +22,7 @@ export async function getPosts({ includeDrafts = import.meta.env.DEV } = {}) {
                 entry,
             };
         })
-        .sort(
-            (a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id),
-        );
+        .sort(comparePosts);
 }
 
 export function tagHref(tag: string) {

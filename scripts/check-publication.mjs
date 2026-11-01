@@ -28,7 +28,7 @@ const article = join(output, "posts", id, "index.html");
 const body = "PUBLICATION_LIFECYCLE_TEST_BODY";
 const content = (title, draft = false) =>
     `---\ntitle: ${title}\ndescription: Publication test\ndate: "2026-09-01"\nminutes: 1\ntags: [draft-only, draft-only]\ndraft: ${draft}\n---\n\n## Check\n\n${body}\n`;
-function build(expectedError) {
+function build(expectedError, expectedFile = `${id}.mdx`) {
     const result = spawnSync(
         process.execPath,
         [cli, "build", "--outDir", output],
@@ -41,7 +41,8 @@ function build(expectedError) {
     const log = result.stdout + result.stderr;
     if (expectedError) {
         assert.notEqual(result.status, 0, "Invalid article unexpectedly built");
-        assert(log.includes(expectedError), log);
+        for (const message of [expectedError, expectedFile].flat())
+            assert(log.replaceAll("\\", "/").includes(message), log);
     } else assert.equal(result.status, 0, log);
 }
 async function assertOmitted() {
@@ -99,6 +100,7 @@ try {
     );
     const pathFixtures = [
         [`${folderId}.mdx`, folderId],
+        [`${folderId}-entry.mdx`, `${folderId}-entry`],
         [`${folderId}/index.mdx`, `${folderId}/index`],
         [`${folderId}/second/entry.mdx`, `${folderId}/second/entry`],
     ];
@@ -109,6 +111,22 @@ try {
                 flag: "wx",
             });
         build();
+        const expectedOrder = [
+            folderId,
+            `${folderId}-entry`,
+            id,
+            `${folderId}/index`,
+            `${folderId}/second/entry`,
+        ];
+        for (const page of ["index.html", "tags/draft-only/index.html"]) {
+            const html = await readFile(join(output, page), "utf8");
+            const actual = [
+                ...html.matchAll(/<h2>\s*<a href="\/posts\/([^" ]+)\/"/g),
+            ]
+                .map((match) => match[1])
+                .filter((route) => expectedOrder.includes(route));
+            assert.deepEqual(actual, expectedOrder, page);
+        }
         for (const [, route] of pathFixtures)
             assert(
                 (
@@ -144,13 +162,36 @@ try {
             await writeFile(invalidSource, content("Invalid path"), {
                 flag: "wx",
             });
-            build(`記事の配置が不正です: src/content/posts/${path}`);
+            build(`記事の配置が不正です: src/content/posts/${path}`, path);
         } finally {
             await unlink(invalidSource);
             if (createFolder) await rmdir(folder);
         }
     }
     for (const [invalid, message] of [
+        [content("Invalid").replace("title: Invalid\n", ""), "title"],
+        [content("Invalid").replace("title: Invalid", 'title: "   "'), "title"],
+        [
+            '---\ntitle: 123\ndescription: 123\ndate: 123\nupdated: 123\ntags: astro\ndraft: "false"\nminutes: "1"\nimage: 123\n---\n',
+            [
+                "title",
+                "description",
+                "date",
+                "updated",
+                "tags",
+                "draft",
+                "minutes",
+                "image",
+            ],
+        ],
+        [content("Invalid").replace("2026-09-01", "2026-02-29"), "date"],
+        [
+            content("Invalid", true).replace(
+                "minutes: 1",
+                'minutes: 1\nupdated: "1900-02-29"',
+            ),
+            "updated",
+        ],
         [
             content("Invalid").replace(
                 "title: Invalid",
