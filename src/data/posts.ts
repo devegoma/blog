@@ -1,11 +1,12 @@
 import { getCollection } from "astro:content";
 import { comparePosts } from "../utils/post-order.mjs";
 
-// Detail pages, lists and tags share this publication boundary.
-export async function getPosts({ includeDrafts = import.meta.env.DEV } = {}) {
+// Public by default in every environment. Only detail previews opt in to drafts.
+export async function getPosts({ includeDrafts = false } = {}) {
     const entries = await getCollection(
         "posts",
-        ({ data }) => includeDrafts || !data.draft,
+        ({ data }) =>
+            data.draft === false || (import.meta.env.DEV && includeDrafts),
     );
     return entries
         .map((entry) => {
