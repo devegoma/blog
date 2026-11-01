@@ -25,12 +25,12 @@ function build() {
 async function add(index) {
     const slug = `${id}-${String(index).padStart(2, "0")}`;
     const path = join(root, "src/content/posts", `${slug}.mdx`);
+    sources.push(path);
     await writeFile(
         path,
-        `---\nslug: ${slug}\ntitle: ${slug}\ndescription: Pagination verification\ndate: "2026-09-01"\ntags: [typescript, astro]\ndraft: false\n---\n\nPagination check.\n`,
+        `---\ntitle: ${slug}\ndescription: Pagination verification\ndate: "2026-09-01"\ntags: [typescript, astro, typescript]\ndraft: false\n---\n\nPagination check.\n`,
         { flag: "wx" },
     );
-    sources.push(path);
     return slug;
 }
 try {
@@ -70,5 +70,9 @@ try {
         "Tag checks passed: 10/11 posts, stable ties, multiple tags, pagination URLs, draft exclusion.",
     );
 } finally {
-    await Promise.all(sources.map((path) => unlink(path)));
+    await Promise.all(
+        sources.map(async (path) => {
+            await unlink(path);
+        }),
+    );
 }

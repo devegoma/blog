@@ -7,23 +7,27 @@ import {
     writeFile,
     unlink,
     readdir,
+    rmdir,
 } from "node:fs/promises";
 import { createServer } from "node:net";
-import { resolve, join } from "node:path";
+import { resolve, join, dirname } from "node:path";
 import { setTimeout } from "node:timers/promises";
 
 const root = resolve(import.meta.dirname, "..");
 const cli = join(root, "node_modules/astro/bin/astro.mjs");
-const id = `publication-check-${process.pid}`;
-const source = join(root, "src/content/posts", `${id}.mdx`);
-const markdownId = `${id}-markdown`;
-const markdownSource = join(root, "src/content/posts", `${markdownId}.md`);
+const folderId = `publication-check-${process.pid}`;
+const id = `${folderId}/entry`;
+const postsRoot = join(root, "src/content/posts");
+const sourceFolder = join(postsRoot, folderId);
+const source = join(sourceFolder, "entry.mdx");
+const markdownId = `${folderId}/markdown`;
+const markdownSource = join(sourceFolder, "markdown.md");
 await mkdir(join(root, "test-results"), { recursive: true });
 const output = await mkdtemp(join(root, "test-results/publication-"));
 const article = join(output, "posts", id, "index.html");
 const body = "PUBLICATION_LIFECYCLE_TEST_BODY";
 const content = (title, draft = false) =>
-    `---\ntitle: ${title}\nslug: ${id}\ndescription: Publication test\ndate: "2026-09-01"\nminutes: 1\ntags: [draft-only]\ndraft: ${draft}\n---\n\n## Check\n\n${body}\n`;
+    `---\ntitle: ${title}\ndescription: Publication test\ndate: "2026-09-01"\nminutes: 1\ntags: [draft-only, draft-only]\ndraft: ${draft}\n---\n\n## Check\n\n${body}\n`;
 function build(expectedError) {
     const result = spawnSync(
         process.execPath,
@@ -66,18 +70,12 @@ async function assertOmitted() {
     );
 }
 
-await writeFile(source, content("Original title"), { flag: "wx" });
-let markdownCreated = false;
+await mkdir(sourceFolder);
 try {
-    await writeFile(
-        markdownSource,
-        content("Unsupported Markdown").replace(
-            `slug: ${id}`,
-            `slug: ${markdownId}`,
-        ),
-        { flag: "wx" },
-    );
-    markdownCreated = true;
+    await writeFile(source, content("Original title"), { flag: "wx" });
+    await writeFile(markdownSource, content("Unsupported Markdown"), {
+        flag: "wx",
+    });
     build();
     await assert.rejects(
         readFile(join(output, "posts", markdownId, "index.html")),
@@ -89,8 +87,81 @@ try {
         ),
     );
     assert((await readFile(article, "utf8")).includes("Original title"));
+    assert(
+        (await readFile(join(output, "index.html"), "utf8")).includes(
+            `href="/posts/${id}/"`,
+        ),
+    );
+    assert(
+        (
+            await readFile(join(output, "tags/draft-only/index.html"), "utf8")
+        ).includes(`href="/posts/${id}/"`),
+    );
+    const pathFixtures = [
+        [`${folderId}.mdx`, folderId],
+        [`${folderId}/index.mdx`, `${folderId}/index`],
+        [`${folderId}/second/entry.mdx`, `${folderId}/second/entry`],
+    ];
+    await mkdir(join(sourceFolder, "second"));
+    try {
+        for (const [path] of pathFixtures)
+            await writeFile(join(postsRoot, path), content("Path fixture"), {
+                flag: "wx",
+            });
+        build();
+        for (const [, route] of pathFixtures)
+            assert(
+                (
+                    await readFile(
+                        join(output, "posts", route, "index.html"),
+                        "utf8",
+                    )
+                ).includes("Path fixture"),
+            );
+    } finally {
+        for (const [path] of pathFixtures) await unlink(join(postsRoot, path));
+        await rmdir(join(sourceFolder, "second"));
+    }
+    assert.equal(
+        (
+            (await readFile(article, "utf8")).match(
+                /href="\/tags\/draft-only\/"/g,
+            ) ?? []
+        ).length,
+        1,
+        "Duplicate article tags must render only once",
+    );
+    for (const path of [
+        `${folderId}-Upper/entry.mdx`,
+        `${folderId}/Upper.mdx`,
+        `${folderId}/bad_name.mdx`,
+    ]) {
+        const invalidSource = join(postsRoot, path);
+        const folder = dirname(invalidSource);
+        const createFolder = folder !== sourceFolder && folder !== postsRoot;
+        if (createFolder) await mkdir(folder);
+        try {
+            await writeFile(invalidSource, content("Invalid path"), {
+                flag: "wx",
+            });
+            build(`記事の配置が不正です: src/content/posts/${path}`);
+        } finally {
+            await unlink(invalidSource);
+            if (createFolder) await rmdir(folder);
+        }
+    }
     for (const [invalid, message] of [
-        [content("Invalid").replace(`slug: ${id}\n`, ""), "URL用固定名"],
+        [
+            content("Invalid").replace(
+                "title: Invalid",
+                "title: Invalid\nslug: sample",
+            ),
+            "slug は指定できません",
+        ],
+        [
+            content("Invalid").replace('date: "2026-09-01"\n', ""),
+            "公開日が必要",
+        ],
         [
             content("Invalid").replace("2026-09-01", "9999-01-01"),
             "未来の公開日",
@@ -105,10 +176,6 @@ try {
         [
             content("Invalid").replace("draft-only", "undefined-tag"),
             "未定義のタグ",
-        ],
-        [
-            content("Invalid").replace(`slug: ${id}`, "slug: sample"),
-            "記事URLが重複",
         ],
     ]) {
         await writeFile(source, invalid);
@@ -127,10 +194,19 @@ try {
     await unlink(source).catch((error) => {
         if (error.code !== "ENOENT") throw error;
     });
-    if (markdownCreated) await unlink(markdownSource);
+    await unlink(markdownSource).catch((error) => {
+        if (error.code !== "ENOENT") throw error;
+    });
+    await rmdir(sourceFolder);
 }
 
 // Bind an available local port, then start only our own development process.
+await mkdir(sourceFolder);
+await writeFile(
+    source,
+    "---\ntitle: Nested draft\n---\n\nDRAFT_PREVIEW_ONLY_CONTENT\n",
+    { flag: "wx" },
+);
 const listener = createServer();
 await new Promise((resolve) => listener.listen(0, "127.0.0.1", resolve));
 const port = listener.address().port;
@@ -148,10 +224,9 @@ try {
     let response;
     while (Date.now() < deadline) {
         try {
-            response = await fetch(
-                `http://127.0.0.1:${port}/posts/draft-preview/`,
-                { signal: AbortSignal.timeout(3000) },
-            );
+            response = await fetch(`http://127.0.0.1:${port}/posts/${id}/`, {
+                signal: AbortSignal.timeout(3000),
+            });
             break;
         } catch {
             await setTimeout(200);
@@ -167,7 +242,9 @@ try {
     assert(html.includes("開発プレビュー限定"));
 } finally {
     server.kill();
+    await unlink(source);
+    await rmdir(sourceFolder);
 }
 console.log(
-    "Publication checks passed: MDX-only articles, stable URL, drafts omitted, deleted pages removed, dev preview available.",
+    "Publication checks passed: file-path URLs, nested and index paths, invalid names rejected, duplicate tags removed, stable URL, drafts omitted, deleted pages removed, dev preview available.",
 );
