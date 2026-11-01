@@ -245,7 +245,7 @@ try {
 await mkdir(sourceFolder);
 await writeFile(
     source,
-    "---\ntitle: Nested draft\n---\n\nDRAFT_PREVIEW_ONLY_CONTENT\n",
+    '---\ntitle: Nested draft\ndate: "2099-09-01"\ntags: [draft-only]\n---\n\nDRAFT_PREVIEW_ONLY_CONTENT\n',
     { flag: "wx" },
 );
 const listener = createServer();
@@ -281,6 +281,19 @@ try {
     const html = await response.text();
     assert(html.includes("DRAFT_PREVIEW_ONLY_CONTENT"));
     assert(html.includes("開発プレビュー限定"));
+    for (const path of ["/", "/tags/", "/posts/sample/"]) {
+        const response = await fetch(`http://127.0.0.1:${port}${path}`);
+        assert.equal(response.status, 200, path);
+        const page = await response.text();
+        assert(!page.includes("Nested draft"), path);
+        assert(!page.includes(`href="/posts/${id}/"`), path);
+    }
+    const draftArchive = await fetch(
+        `http://127.0.0.1:${port}/archives/2099-09/`,
+    );
+    assert.equal(draftArchive.status, 404);
+    const draftTag = await fetch(`http://127.0.0.1:${port}/tags/draft-only/`);
+    assert.equal(draftTag.status, 404);
 } finally {
     server.kill();
     await unlink(source);

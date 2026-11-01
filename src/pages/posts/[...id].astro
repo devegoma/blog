@@ -7,7 +7,7 @@ import ArticleTable from "../../components/ArticleTable.astro";
 import CodeBlock from "../../components/CodeBlock.astro";
 
 export async function getStaticPaths() {
-    const posts = await getPosts();
+    const posts = await getPosts({ includeDrafts: import.meta.env.DEV });
     const published = posts.filter((post) => !post.draft);
     return posts.map((post) => {
         const index = published.findIndex((entry) => entry.id === post.id);
