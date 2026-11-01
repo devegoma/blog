@@ -13,12 +13,13 @@ export function createPostSchema(tagDefinitions, now) {
             updated: z.iso.date().optional(),
             tags: z
                 .array(
-                    z
-                        .string()
-                        .refine(
-                            (id) => Object.hasOwn(tagDefinitions, id),
-                            "未定義のタグです",
-                        ),
+                    z.string().superRefine((id, ctx) => {
+                        if (!Object.hasOwn(tagDefinitions, id))
+                            ctx.addIssue({
+                                code: "custom",
+                                message: `未定義のタグです: ${id}`,
+                            });
+                    }),
                 )
                 .default([])
                 .transform((ids) => [...new Set(ids)]),

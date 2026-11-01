@@ -18,7 +18,7 @@
         "check": "astro check",
         "test": "pnpm test:unit && pnpm test:publication && pnpm test:tags && pnpm build && playwright test",
         "test:publication": "node scripts/check-publication.mjs",
-        "test:tags": "node scripts/check-tags.mjs",
+        "test:tags": "node scripts/check-tag-data.mjs && node scripts/check-tags.mjs",
         "test:unit": "node --test unit-tests/*.test.mjs",
         "test:ui": "playwright test --ui"
     },
