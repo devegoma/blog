@@ -9,3 +9,5 @@
 - 既存の画面参照: [下書きデザイン](../../output/issue-15-preview/README.md)。
 
 2026-11-01: pnpm test:drafts 成功。HTTP の3種の下書き、公開専用一覧と404、両ブラウザの12構成が成功。専用スクリプトのESLint・整形も成功。
+
+2026-11-01 PR #49 レビュー対応: 各配色・各幅で html の data-theme と、記事パネル背景・記事見出しの計算済み色を検証するよう追加。pnpm test:drafts（両ブラウザ12表示とJavaScriptなしの操作）・対象ESLint・整形確認が成功。
