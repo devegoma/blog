@@ -80,6 +80,22 @@ try {
                     try {
                         const page = await context.newPage();
                         await page.goto(`${base}/posts/${id}/future/`);
+                        await expect(page.locator("html")).toHaveAttribute(
+                            "data-theme",
+                            colorScheme,
+                        );
+                        await expect(page.locator(".article-paper")).toHaveCSS(
+                            "background-color",
+                            colorScheme === "dark"
+                                ? "rgb(24, 41, 52)"
+                                : "rgb(255, 255, 255)",
+                        );
+                        await expect(page.locator("#article-title")).toHaveCSS(
+                            "color",
+                            colorScheme === "dark"
+                                ? "rgb(237, 245, 247)"
+                                : "rgb(23, 44, 51)",
+                        );
                         await expect(
                             page.locator(".draft-notice"),
                         ).toBeVisible();
