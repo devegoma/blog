@@ -6,7 +6,10 @@ export async function getPosts({ includeDrafts = false } = {}) {
     const entries = await getCollection(
         "posts",
         ({ data }) =>
-            data.draft === false || (import.meta.env.DEV && includeDrafts),
+            data.draft === false ||
+            (import.meta.env.DEV &&
+                includeDrafts &&
+                String(import.meta.env.SHOW_DRAFTS ?? "true") === "true"),
     );
     return entries
         .map((entry) => {
