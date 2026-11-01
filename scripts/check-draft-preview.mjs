@@ -85,7 +85,7 @@ try {
                     const context = await browser.newContext({
                         viewport: { width, height: 900 },
                         colorScheme,
-                        javaScriptEnabled: false,
+                        javaScriptEnabled: true,
                     });
                     try {
                         const page = await context.newPage();
@@ -116,12 +116,27 @@ try {
                     }
                 }
             }
+            const context = await browser.newContext({
+                javaScriptEnabled: false,
+                viewport: { width: 390, height: 844 },
+            });
+            try {
+                const page = await context.newPage();
+                await page.goto(`${base}/posts/${id}/future/`);
+                await expect(page.locator(".draft-notice")).toBeVisible();
+                await page.locator(".mobile-toc summary").click();
+                await expect(page.locator(".mobile-toc[open]")).toBeVisible();
+                await page.locator(".article-end a").click();
+                await expect(page).toHaveURL(base + "/");
+            } finally {
+                await context.close();
+            }
         } finally {
             await browser.close();
         }
     }
     console.log(
-        "Draft previews passed: nested paths, ordinary index, title-only and future dates, public-only lists, both browsers × 3 widths × 2 themes without JavaScript.",
+        "Draft previews passed: nested paths, ordinary index, title-only and future dates, public-only lists, both browsers × 3 widths × 2 themes, plus navigation without JavaScript.",
     );
 } finally {
     if (server && server.exitCode === null) {
