@@ -1,6 +1,6 @@
 ---
 interface Props {
-    active?: "articles" | "tags";
+    active?: "articles" | "tags" | "about" | "none";
 }
 const { active = "articles" } = Astro.props;
 ---
@@ -92,9 +92,12 @@ const { active = "articles" } = Astro.props;
             >
                 タグ
             </a>
-            <span role="link" aria-disabled="true">
+            <a
+                href="/about/"
+                aria-current={active === "about" ? "page" : undefined}
+            >
                 このブログについて
-            </span>
+            </a>
         </nav>
     </div>
 </header>

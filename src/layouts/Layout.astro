@@ -47,6 +47,23 @@ const dateLabel = (date: string) => date.replaceAll("-", ".");
                 aria-labelledby="article-title"
             >
                 <article class="article-paper panel">
+                    {post.draft && (
+                        <aside
+                            class="draft-notice"
+                            aria-label="下書きの公開状態"
+                        >
+                            <div class="draft-notice-heading">
+                                <span class="draft-badge">下書き</span>
+                                <span>開発プレビュー限定</span>
+                            </div>
+                            <p class="draft-notice-title">
+                                この記事はまだ公開されていません
+                            </p>
+                            <p>
+                                手元で本文とレイアウトを確認しています。本番サイトには出力されません。
+                            </p>
+                        </aside>
+                    )}
                     {!post.draft && (
                         <nav class="article-pagination" aria-label="前後の記事">
                             {next ? (
@@ -93,16 +110,11 @@ const dateLabel = (date: string) => date.replaceAll("-", ".");
                         </nav>
                     )}
                     <header class="article-heading">
-                        {post.draft && (
-                            <p class="draft-notice">
-                                下書き · 開発プレビュー限定
-                            </p>
-                        )}
                         <h1 id="article-title">{post.title}</h1>
                         <div class="article-meta">
                             {post.date && (
                                 <span>
-                                    公開{" "}
+                                    {post.draft ? "公開日（設定値）" : "公開"}{" "}
                                     <time datetime={post.date}>
                                         {dateLabel(post.date)}
                                     </time>
@@ -123,11 +135,15 @@ const dateLabel = (date: string) => date.replaceAll("-", ".");
                                 class="tag-list article-tags"
                                 aria-label="記事のタグ"
                             >
-                                {post.tags.map((tag) => (
-                                    <a class="tag" href={tagHref(tag)}>
-                                        {tagLabel(tag)}
-                                    </a>
-                                ))}
+                                {post.tags.map((tag) =>
+                                    post.draft ? (
+                                        <span class="tag">{tagLabel(tag)}</span>
+                                    ) : (
+                                        <a class="tag" href={tagHref(tag)}>
+                                            {tagLabel(tag)}
+                                        </a>
+                                    ),
+                                )}
                             </div>
                         )}
                     </header>
