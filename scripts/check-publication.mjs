@@ -9,6 +9,7 @@ import {
     readdir,
     rmdir,
 } from "node:fs/promises";
+import { once } from "node:events";
 import { createServer } from "node:net";
 import { resolve, join, dirname } from "node:path";
 import { setTimeout } from "node:timers/promises";
@@ -26,6 +27,9 @@ await mkdir(join(root, "test-results"), { recursive: true });
 const output = await mkdtemp(join(root, "test-results/publication-"));
 const article = join(output, "posts", id, "index.html");
 const body = "PUBLICATION_LIFECYCLE_TEST_BODY";
+const contractSource = join(root, "src/pages", `${folderId}.json.ts`);
+const contractOutput = join(output, `${folderId}.json`);
+let contractCreated = false;
 const content = (title, draft = false) =>
     `---\ntitle: ${title}\ndescription: Publication test\ndate: "2026-09-01"\nminutes: 1\ntags: [draft-only, draft-only]\ndraft: ${draft}\n---\n\n## Check\n\n${body}\n`;
 function build(expectedError, expectedFile = `${id}.mdx`) {
@@ -51,17 +55,25 @@ async function assertOmitted() {
         recursive: true,
         withFileTypes: true,
     })) {
-        if (entry.isFile() && /\.(html|js|json)$/.test(entry.name)) {
-            const text = await readFile(
-                join(entry.parentPath, entry.name),
-                "utf8",
-            );
+        if (!entry.isFile()) continue;
+        const bytes = await readFile(join(entry.parentPath, entry.name));
+        for (const marker of [
+            body,
+            "Renamed title",
+            "Publication test",
+            `/posts/${id}/`,
+        ])
             assert(
-                !text.includes(body),
-                `Draft body leaked into ${entry.name}`,
+                !bytes.includes(Buffer.from(marker)),
+                `Unpublished data leaked into ${join(entry.parentPath, entry.name)}: ${marker}`,
             );
-        }
     }
+    const exposed = JSON.parse(await readFile(contractOutput, "utf8"));
+    assert(
+        !exposed.some((post) => post.id === id),
+        "Production includeDrafts opt-in exposed a draft",
+    );
+    await assertPreviewStatus(404);
     await assert.rejects(readFile(join(output, "tags/draft-only/index.html")), {
         code: "ENOENT",
     });
@@ -73,6 +85,12 @@ async function assertOmitted() {
 
 await mkdir(sourceFolder);
 try {
+    await writeFile(
+        contractSource,
+        'import { getPosts } from "../data/posts";\nexport async function GET() { return new Response(JSON.stringify((await getPosts({ includeDrafts: true })).map(({ id, title, description, href }) => ({ id, title, description, href })))); }\n',
+        { flag: "wx" },
+    );
+    contractCreated = true;
     await writeFile(source, content("Original title"), { flag: "wx" });
     await writeFile(markdownSource, content("Unsupported Markdown"), {
         flag: "wx",
@@ -225,13 +243,34 @@ try {
     await writeFile(source, content("Renamed title"));
     build();
     assert((await readFile(article, "utf8")).includes("Renamed title"));
+    await assertPreviewStatus(200);
     await writeFile(source, content("Renamed title", true));
     build();
     await assertOmitted();
+    await writeFile(
+        source,
+        content("Renamed title").replace("draft: false\n", ""),
+    );
+    build();
+    await assertOmitted();
+    await writeFile(
+        source,
+        content("Renamed title").replace(
+            "tags: [draft-only, draft-only]",
+            "tags: []",
+        ),
+    );
+    build();
+    assert((await readFile(article, "utf8")).includes("Renamed title"));
+    await assertPreviewStatus(200);
+    await assert.rejects(readFile(join(output, "tags/draft-only/index.html")), {
+        code: "ENOENT",
+    });
     await unlink(source);
     build();
     await assertOmitted();
 } finally {
+    if (contractCreated) await unlink(contractSource);
     await unlink(source).catch((error) => {
         if (error.code !== "ENOENT") throw error;
     });
@@ -295,10 +334,64 @@ try {
     const draftTag = await fetch(`http://127.0.0.1:${port}/tags/draft-only/`);
     assert.equal(draftTag.status, 404);
 } finally {
-    server.kill();
+    if (server.exitCode === null) {
+        const exited = once(server, "exit");
+        server.kill();
+        await exited;
+    }
     await unlink(source);
     await rmdir(sourceFolder);
 }
 console.log(
-    "Publication checks passed: file-path URLs, nested and index paths, invalid names rejected, duplicate tags removed, stable URL, drafts omitted, deleted pages removed, dev preview available.",
+    "Publication checks passed: file-path URLs, nested and index paths, invalid names rejected, duplicate tags removed, stable URL, all artifact types inspected, draft and omitted states hidden, tagless republishing, production HTTP 200/404, deleted pages removed, dev preview available.",
 );
+
+// Serve the actual build directory; filesystem absence alone does not prove HTTP 404.
+async function assertPreviewStatus(status) {
+    const listener = createServer();
+    await new Promise((done) => listener.listen(0, "127.0.0.1", done));
+    const port = listener.address().port;
+    await new Promise((done) => listener.close(done));
+    const server = spawn(
+        process.execPath,
+        [
+            cli,
+            "preview",
+            "--outDir",
+            output,
+            "--host",
+            "127.0.0.1",
+            "--port",
+            String(port),
+        ],
+        { cwd: root, stdio: "ignore" },
+    );
+    try {
+        const deadline = Date.now() + 30000;
+        let ready = false;
+        while (Date.now() < deadline && !ready) {
+            try {
+                ready =
+                    (
+                        await fetch(`http://127.0.0.1:${port}/`, {
+                            signal: AbortSignal.timeout(3000),
+                        })
+                    ).status === 200;
+            } catch {
+                /* Wait for our own preview server. */
+            }
+            if (!ready) await setTimeout(200);
+        }
+        assert(ready, "Production preview did not become ready");
+        assert.equal(
+            (await fetch(`http://127.0.0.1:${port}/posts/${id}/`)).status,
+            status,
+        );
+    } finally {
+        if (server.exitCode === null) {
+            const exited = once(server, "exit");
+            server.kill();
+            await exited;
+        }
+    }
+}
