@@ -6,12 +6,9 @@ export async function getPosts({ includeDrafts = import.meta.env.DEV } = {}) {
         "posts",
         ({ data }) => includeDrafts || !data.draft,
     );
-    const ids = new Set<string>();
     return entries
         .map((entry) => {
-            const id = entry.data.slug ?? entry.id;
-            if (ids.has(id)) throw new Error(`記事URLが重複しています: ${id}`);
-            ids.add(id);
+            const id = entry.id;
             return {
                 ...entry.data,
                 id,
