@@ -1,7 +1,10 @@
 import { z } from "astro/zod";
 
-/** @param {Record<string, unknown>} tagDefinitions */
-export function createPostSchema(tagDefinitions, now = new Date()) {
+/**
+ * @param {Record<string, unknown>} tagDefinitions
+ * @param {Date} [now] Fixed test clock; omitted time is read on each validation.
+ */
+export function createPostSchema(tagDefinitions, now) {
     return z
         .object({
             title: z.string().trim().min(1),
@@ -30,7 +33,7 @@ export function createPostSchema(tagDefinitions, now = new Date()) {
                 year: "numeric",
                 month: "2-digit",
                 day: "2-digit",
-            }).format(now);
+            }).format(now ?? new Date());
             if (!data.date)
                 ctx.addIssue({
                     code: "custom",

@@ -110,6 +110,34 @@ test("drafts allow future dates and reversed dates until publication", () => {
     }
 });
 
+test("default clock refreshes on every validation across Tokyo midnight", (t) => {
+    t.mock.timers.enable({
+        apis: ["Date"],
+        now: new Date("2026-10-31T14:59:59.999Z"),
+    });
+    const liveSchema = createPostSchema({});
+    const fixedSchema = createPostSchema({}, new Date());
+    const input = {
+        title: "New day's article",
+        date: "2026-11-01",
+        updated: "2026-11-01",
+        draft: false,
+    };
+    rejects(input, "date", liveSchema);
+    rejects(input, "updated", liveSchema);
+
+    t.mock.timers.setTime(new Date("2026-10-31T15:00:00.000Z").getTime());
+    assert.equal(liveSchema.safeParse(input).success, true);
+    rejects(input, "date", fixedSchema);
+    rejects(input, "updated", fixedSchema);
+
+    const nextDay = { ...input, date: "2026-11-02", updated: "2026-11-02" };
+    rejects(nextDay, "date", liveSchema);
+    rejects(nextDay, "updated", liveSchema);
+    t.mock.timers.setTime(new Date("2026-11-01T15:00:00.000Z").getTime());
+    assert.equal(liveSchema.safeParse(nextDay).success, true);
+});
+
 test("Tokyo midnight changes the allowed day independently of OS timezone", () => {
     // Each child process imports and runs the actual schema under its own TZ.
     const code = `
