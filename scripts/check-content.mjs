@@ -25,9 +25,14 @@ const posts = join(fixture, "src/content/posts");
 await mkdir(posts, { recursive: true });
 await writeFile(
     join(fixture, "src/pages/content-check.json.ts"),
-    `import { getPosts } from "../data/posts";
+    `import { getCollection } from "astro:content";
+import { getPosts } from "../data/posts";
 export async function GET() {
-    return new Response(JSON.stringify(await getPosts({ includeDrafts: true })));
+    const entries = (await getCollection("posts")).map((entry) => ({
+        ...entry.data, id: entry.id, href: "/posts/" + entry.id + "/", entry,
+    }));
+    const published = await getPosts({ includeDrafts: true });
+    return new Response(JSON.stringify({ entries, published }));
 }
 `,
 );
@@ -74,8 +79,15 @@ await add(
     `${published}\nupdated: "2026-09-02"\ndescription: Explicit description\ntags: [astro]\nminutes: 2\nimage: /images/example.png`,
 );
 build();
-const entries = await snapshot();
+const { entries, published: publicEntries } = await snapshot();
 assert.equal(entries.length, 8);
+assert.equal(publicEntries.length, 6);
+assert(publicEntries.every((post) => post.draft === false));
+assert(
+    !publicEntries.some((post) =>
+        ["draft", "explicit-draft"].includes(post.id),
+    ),
+);
 for (const post of entries) {
     assert.equal(post.href, `/posts/${post.id}/`);
     assert.equal(post.entry.id, post.id);
@@ -97,7 +109,7 @@ for (const post of entries) {
         assert((await html("")).includes(`href="${post.href}"`));
     }
 }
-const minimal = entries.find((post) => post.id === "automation");
+const minimal = publicEntries.find((post) => post.id === "automation");
 assert.deepEqual(minimal.entry.data, {
     title: "Minimal published",
     date: "2026-09-01",
@@ -106,7 +118,7 @@ assert.deepEqual(minimal.entry.data, {
 });
 assert.equal(minimal.entry.data.description, undefined);
 assert.equal(minimal.description, minimal.title); // Display fallback, not #27's excerpt.
-const optional = entries.find((post) => post.id === "optional");
+const optional = publicEntries.find((post) => post.id === "optional");
 assert.equal(optional.description, "Explicit description");
 assert.deepEqual(optional.tags, ["astro"]);
 assert.equal(optional.minutes, 2);
@@ -119,7 +131,8 @@ await add(
 build();
 assert((await html("posts/astro/routing")).includes("Renamed title"));
 assert.equal(
-    (await snapshot()).find((post) => post.title === "Renamed title").href,
+    (await snapshot()).entries.find((post) => post.title === "Renamed title")
+        .href,
     "/posts/astro/routing/",
 );
 

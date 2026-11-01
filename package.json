@@ -16,12 +16,13 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "check": "astro check",
-        "test": "pnpm test:unit && pnpm test:content && pnpm test:publication && pnpm test:tags && pnpm build && playwright test",
+        "test": "pnpm test:unit && pnpm test:content && pnpm test:publication && pnpm test:drafts && pnpm test:tags && pnpm build && playwright test",
         "test:content": "node scripts/check-content.mjs",
         "test:publication": "node scripts/check-publication.mjs",
         "test:tags": "node scripts/check-tag-data.mjs && node scripts/check-tags.mjs",
         "test:unit": "node --test unit-tests/*.test.mjs",
-        "test:ui": "playwright test --ui"
+        "test:ui": "playwright test --ui",
+        "test:drafts": "node scripts/check-draft-preview.mjs"
     },
     "dependencies": {
         "@astrojs/mdx": "8.1.1",
