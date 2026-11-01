@@ -1,0 +1,32 @@
+[
+    {
+        "image": "1440-dark.png",
+        "same_size": true,
+        "identical_pixels": true
+    },
+    {
+        "image": "1440-light.png",
+        "same_size": true,
+        "identical_pixels": true
+    },
+    {
+        "image": "320-dark.png",
+        "same_size": true,
+        "identical_pixels": true
+    },
+    {
+        "image": "320-light.png",
+        "same_size": true,
+        "identical_pixels": true
+    },
+    {
+        "image": "390-dark.png",
+        "same_size": true,
+        "identical_pixels": true
+    },
+    {
+        "image": "390-light.png",
+        "same_size": true,
+        "identical_pixels": true
+    }
+]
