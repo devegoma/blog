@@ -10,6 +10,10 @@ import { chromium, firefox, expect } from "@playwright/test";
 const root = resolve(import.meta.dirname, "..");
 const id = `draft-check-${process.pid}`;
 const directory = join(root, "src/content/posts", id);
+const envFile = join(root, `.env.${id}`);
+const childEnv = { ...process.env };
+delete childEnv.SHOW_DRAFTS;
+let envCreated = false;
 const fixtures = [
     ["minimal", ""],
     ["index", "draft: true\n"],
@@ -32,34 +36,20 @@ try {
             `---\ntitle: ${id}-${name}\n${fields}---\n\n## Preview heading\n\n${id} preview body\n`,
             { flag: "wx" },
         );
-    server = spawn(
-        process.execPath,
-        [
-            join(root, "node_modules/astro/bin/astro.mjs"),
-            "dev",
-            "--host",
-            "127.0.0.1",
-            "--port",
-            String(port),
-        ],
-        { cwd: root, stdio: "ignore" },
-    );
-    const deadline = Date.now() + 30000;
-    let ready = false;
-    while (Date.now() < deadline && !ready) {
-        try {
-            ready =
-                (
-                    await fetch(`${base}/posts/${id}/minimal/`, {
-                        signal: AbortSignal.timeout(3000),
-                    })
-                ).status === 200;
-        } catch {
-            /* The server is still starting. */
-        }
-        if (!ready) await setTimeout(200);
+    // Use an isolated mode file to test real .env loading without touching local settings.
+    await writeFile(envFile, "", { flag: "wx" });
+    envCreated = true;
+    for (const setting of ["false", "", "invalid", "true"]) {
+        await writeFile(envFile, `SHOW_DRAFTS=${setting}\n`);
+        await startServer();
+        const response = await fetch(`${base}/posts/${id}/minimal/`);
+        assert.equal(
+            response.status,
+            setting === "true" ? 200 : 404,
+            `SHOW_DRAFTS=${setting}`,
+        );
+        if (setting !== "true") await stopServer();
     }
-    assert(ready, "Draft development server did not become ready");
     for (const [name] of fixtures) {
         const response = await fetch(`${base}/posts/${id}/${name}/`);
         assert.equal(response.status, 200);
@@ -136,17 +126,53 @@ try {
         }
     }
     console.log(
-        "Draft previews passed: nested paths, ordinary index, title-only and future dates, public-only lists, both browsers × 3 widths × 2 themes, plus navigation without JavaScript.",
+        "Draft previews passed: .env false/empty/invalid/true, nested paths, ordinary index, title-only and future dates, public-only lists, both browsers × 3 widths × 2 themes, plus navigation without JavaScript.",
     );
 } finally {
-    if (server && server.exitCode === null) {
-        const exited = once(server, "exit");
-        server.kill();
-        await exited;
-    }
+    await stopServer();
+    if (envCreated) await unlink(envFile);
     for (const [name] of fixtures)
         await unlink(join(directory, `${name}.mdx`)).catch((error) => {
             if (error.code !== "ENOENT") throw error;
         });
     await rmdir(directory);
+}
+
+async function startServer() {
+    server = spawn(
+        process.execPath,
+        [
+            join(root, "node_modules/astro/bin/astro.mjs"),
+            "dev",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            String(port),
+            "--mode",
+            id,
+        ],
+        { cwd: root, stdio: "ignore", env: childEnv },
+    );
+    const deadline = Date.now() + 30000;
+    while (Date.now() < deadline) {
+        try {
+            if (
+                (await fetch(base + "/", { signal: AbortSignal.timeout(3000) }))
+                    .status === 200
+            )
+                return;
+        } catch {
+            /* The server is still starting. */
+        }
+        await setTimeout(200);
+    }
+    assert.fail("Draft development server did not become ready");
+}
+
+async function stopServer() {
+    if (server && server.exitCode === null) {
+        const exited = once(server, "exit");
+        server.kill();
+        await exited;
+    }
 }

@@ -40,6 +40,7 @@ function build(expectedError, expectedFile = `${id}.mdx`) {
             cwd: root,
             encoding: "utf8",
             timeout: 60000,
+            env: { ...process.env, SHOW_DRAFTS: "true" },
         },
     );
     const log = result.stdout + result.stderr;
@@ -297,6 +298,7 @@ const server = spawn(
     {
         cwd: root,
         stdio: "ignore",
+        env: { ...process.env, SHOW_DRAFTS: "true" },
     },
 );
 try {
