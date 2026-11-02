@@ -4,7 +4,12 @@ import SiteHeader from "../components/SiteHeader.astro";
 import "../styles/about.css";
 ---
 
-<HomeLayout title="このブログについて" mainId="about" skipLabel="本文へ移動">
+<HomeLayout
+    title="このブログについて"
+    description="devegomaのプロフィールと、このブログで記録している学びについて紹介します。"
+    mainId="about"
+    skipLabel="本文へ移動"
+>
     <div class="about-page">
         <SiteHeader active="about" />
         <main id="about" class="about">

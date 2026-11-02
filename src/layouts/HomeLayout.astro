@@ -6,12 +6,14 @@ import { formatPageTitle } from "../utils/page-title.mjs";
 interface Props {
     title?: string;
     description?: string;
+    noindex?: boolean;
     mainId?: string;
     skipLabel?: string;
 }
 const {
     title = "記事",
     description = "読んだ本、試した道具。日々の学びを記録する devegoma の個人ブログ。",
+    noindex = false,
     mainId = "articles",
     skipLabel = "記事一覧へ移動",
 } = Astro.props;
@@ -24,6 +26,14 @@ const {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content={description} />
         <title>{formatPageTitle(title)}</title>
+        {noindex ? (
+            <meta name="robots" content="noindex" />
+        ) : (
+            <link
+                rel="canonical"
+                href={new URL(Astro.url.pathname, Astro.site)}
+            />
+        )}
         <link
             rel="alternate"
             type="application/rss+xml"
