@@ -29,11 +29,11 @@
         "test:drafts": "node scripts/check-draft-preview.mjs"
     },
     "dependencies": {
-        "@astrojs/mdx": "8.1.1",
+        "@astrojs/mdx": "8.1.2",
         "@astrojs/rss": "4.0.19",
         "@tailwindcss/vite": "4.3.3",
-        "astro": "7.4.2",
-        "satteri": "0.10.5",
+        "astro": "7.4.4",
+        "satteri": "0.11.6",
         "tailwindcss": "4.3.3"
     },
     "devDependencies": {
