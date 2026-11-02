@@ -79,7 +79,7 @@ test("検索は準備中と分かり、モバイルでは開閉して元のボ�
     }
 });
 
-test("ホームに記事一覧・プロフィール・未実装の導線が表示される", async ({
+test("ホームに記事一覧・プロフィール・購読の導線が表示される", async ({
     page,
 }) => {
     await page.goto("/");
@@ -94,8 +94,8 @@ test("ホームに記事一覧・プロフィール・未実装の導線が表�
         page.getByRole("navigation", { name: "メイン" }),
     ).toBeVisible();
     await expect(
-        page.getByRole("link", { name: "RSS（準備中）", exact: true }),
-    ).toHaveAttribute("aria-disabled", "true");
+        page.getByRole("link", { name: "RSSを購読", exact: true }),
+    ).toHaveAttribute("href", "/rss.xml");
     await expect(
         page.getByRole("link", { name: "GitHub", exact: true }),
     ).toHaveAttribute("href", "https://github.com/devegoma");
