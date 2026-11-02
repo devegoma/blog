@@ -6,6 +6,7 @@ import { formatPageTitle } from "../utils/page-title.mjs";
 interface Props {
     title?: string;
     description?: string;
+    type?: "website" | "article";
     noindex?: boolean;
     mainId?: string;
     skipLabel?: string;
@@ -14,9 +15,13 @@ const {
     title = "記事",
     description = "読んだ本、試した道具。日々の学びを記録する devegoma の個人ブログ。",
     noindex = false,
+    type = "website",
     mainId = "articles",
     skipLabel = "記事一覧へ移動",
 } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialTitle = type === "article" ? title : formatPageTitle(title);
+const socialImage = new URL("/images/social-share.png", Astro.site);
 ---
 
 <!doctype html>
@@ -29,10 +34,23 @@ const {
         {noindex ? (
             <meta name="robots" content="noindex" />
         ) : (
-            <link
-                rel="canonical"
-                href={new URL(Astro.url.pathname, Astro.site)}
-            />
+            <link rel="canonical" href={canonical} />
+        )}
+        {!noindex && (
+            <>
+                <meta property="og:type" content={type} />
+                <meta property="og:title" content={socialTitle} />
+                <meta property="og:description" content={description} />
+                <meta property="og:url" content={canonical} />
+                <meta property="og:site_name" content="devegoma's blog" />
+                <meta property="og:image" content={socialImage} />
+                <meta property="og:image:alt" content="devegoma's blog" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={socialTitle} />
+                <meta name="twitter:description" content={description} />
+                <meta name="twitter:image" content={socialImage} />
+                <meta name="twitter:image:alt" content="devegoma's blog" />
+            </>
         )}
         <link
             rel="alternate"

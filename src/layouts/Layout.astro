@@ -26,7 +26,8 @@ const dateLabel = (date: string) => date.replaceAll("-", ".");
 
 <HomeLayout
     title={post.title}
-    description={post.description}
+    description={post.summary}
+    type="article"
     noindex={post.draft}
     mainId="article-content"
     skipLabel="記事本文へ移動"
