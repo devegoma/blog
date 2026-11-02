@@ -117,9 +117,17 @@ assert.deepEqual(minimal.entry.data, {
     draft: false,
 });
 assert.equal(minimal.entry.data.description, undefined);
-assert.equal(minimal.description, minimal.title); // Display fallback, not #27's excerpt.
+assert.equal(minimal.summary, body);
+assert.equal(minimal.description, body);
+assert((await html("")).includes(`<p>${body}</p>`));
+assert(
+    (await html("posts/automation")).includes(
+        `<meta name="description" content="${body}"`,
+    ),
+);
 const optional = publicEntries.find((post) => post.id === "optional");
 assert.equal(optional.description, "Explicit description");
+assert.equal(optional.summary, "Explicit description");
 assert.deepEqual(optional.tags, ["astro"]);
 assert.equal(optional.minutes, 2);
 assert.equal(optional.image, "/images/example.png");

@@ -16,8 +16,9 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "check": "astro check",
-        "test": "pnpm test:unit && pnpm test:content && pnpm test:publication && pnpm test:drafts && pnpm test:tags && pnpm build && playwright test",
+        "test": "pnpm test:unit && pnpm test:content && pnpm test:rss && pnpm test:publication && pnpm test:drafts && pnpm test:tags && pnpm build && playwright test",
         "test:content": "node scripts/check-content.mjs",
+        "test:rss": "node scripts/check-rss.mjs",
         "test:publication": "node scripts/check-publication.mjs",
         "test:tags": "node scripts/check-tag-data.mjs && node scripts/check-tags.mjs",
         "test:unit": "node --test unit-tests/*.test.mjs",
@@ -26,8 +27,10 @@
     },
     "dependencies": {
         "@astrojs/mdx": "8.1.1",
+        "@astrojs/rss": "4.0.19",
         "@tailwindcss/vite": "4.3.3",
         "astro": "7.4.2",
+        "satteri": "0.10.5",
         "tailwindcss": "4.3.3"
     },
     "devDependencies": {
@@ -40,6 +43,7 @@
         "prettier": "3.9.10",
         "prettier-plugin-astro": "1.1.2",
         "prettier-plugin-tailwindcss": "0.8.1",
+        "sax": "1.6.1",
         "typescript": "6.0.3",
         "typescript-eslint": "8.72.1"
     }
