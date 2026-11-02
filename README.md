@@ -35,11 +35,17 @@ Windows版Codexから実行する場合は、ブラウザ導入前に下記「Wi
 | `pnpm test`         | ビルド後、Chromium・Firefox × 3サイズの6構成で検証 |
 | `pnpm test:ui`      | Playwright UI（先に `pnpm build` を実行）          |
 
-`pnpm test:unit` で Node.js 標準テストランナーによる単体テストだけを実行できます。`pnpm test` は単体テストも先に実行します。
+`pnpm test:unit` で Node.js 標準テストランナーによるテストを実行できます。成果物検査コマンドの正常・異常系も含むため、Chromiumを先にインストールしてください。`pnpm test` はこの検査も先に実行します。
 
 `pnpm test:rss` は、隔離した記事を実際にビルドし、RSSの0件・20件・21件以上、概要・順序・日付・識別子、下書き・削除・差し戻し、XMLとHTTP応答・記事リンクを確認します。`pnpm test` にも含まれます。一時出力は `test-results/` に保存します。Playwrightが同じフォルダを初期化するため、ブラウザテストと並行して実行しないでください。
 
 RSSの固定URLは `https://blog.devegoma.com/rss.xml` です。ローカルでは `/rss.xml` を開いて確認できます。ホーム・月別一覧・記事のプロフィールにあるRSSアイコンからアクセスでき、RSSリーダー用の自動検出情報も各ページに出力します。最新20件の公開記事について概要と記事リンクを掲載し、全文は配信しません。仕様と検証結果は [Issue #28 の記録](docs/specs/issue-28-rss.md) を参照してください。
+
+サイトマップは `https://blog.devegoma.com/sitemap.xml` にビルド時に生成し、`/robots.txt` から案内します。トップ・プロフィール・タグ一覧・公開記事・タグ別一覧の全ページ・月別アーカイブを掲載します。下書き・削除記事・公開記事のないタグや月・404は掲載しません。`pnpm test:sitemap` は隔離ビルドでXML・掲載URL集合・ページ送り・削除と下書きへの差し戻し・robots.txtに加え、全掲載ページのメタ情報とローカルHTTP応答を確認します。`pnpm test`とCIにも含まれます。[Issue #29 の仕様と検証記録](docs/specs/issue-29-sitemap.md) を参照してください。
+
+公開ページにはページに応じた説明文と自身を指すcanonicalを出力します。404と開発用下書きプレビューはnoindexとし、canonicalを出しません。`pnpm test:search-metadata` は隔離ビルドのHTMLと実際の開発サーバーの応答を、JavaScript無効のChromiumで検査します。先に `pnpm exec playwright install chromium` を実行してください。一時出力は `test-results/` に保存するため、同フォルダを初期化するブラウザテストと並行実行しないでください。`pnpm test`とCIにも含まれます。
+
+`pnpm build` 後の `pnpm test:search-artifacts` は、実際の `dist/` を検査します。HTML全件とサイトマップの集合、canonical・必須メタ情報・404、XMLの構造、robots.txt、同じ成果物を配信したローカルHTTP応答を確認します。別の出力先には `node scripts/check-search-artifacts.mjs <ディレクトリ>` を使用できます。本番ドメインへの通信は行いません。`pnpm test`は通常ビルドの直後にもこの検査を実行してから画面テストへ進みます。
 
 `pnpm test:publication` は、一時記事を使って固定URL・公開データ検証・下書き除外・削除後の出力・開発プレビューを確認します。出力先は `test-results/` です。`pnpm test` では、この確認後に通常の本番ビルドとブラウザテストを実行します。同じ作業コピーで並行して実行しないでください。
 
@@ -177,7 +183,7 @@ CI が表示された後、リポジトリ側で main の直接 push を禁止�
 
 2026-10-30 に Lint・整形・型チェック、単体テスト2件、Chromium／Firefox × 3サイズの計30ブラウザテストが成功しました。PC 1444px・モバイル390px／320pxの両配色も目視確認済みです。実装記録は [作業計画](docs/work-plan.md)、開発用素材とフォントの出典は `public/images/README.md`・`public/fonts/README.md` を参照してください。
 
-記事・タグ・下書き・RSSをローカルで検証できる状態です。テーマ選定と本番公開は未実施です。
+記事・タグ・下書き・RSS・サイトマップをローカルで検証できる状態です。テーマ選定と本番公開は未実施です。
 サンプルを含む現在の `dist/` は動作確認用で、本番へのデプロイ処理は接続していません。
 Cloudflare 接続時には、サンプルを含まない本番成果物の検証と同一成果物の公開、同時公開の制限、最新 main の確認を追加します。
 

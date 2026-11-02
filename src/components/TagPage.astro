@@ -32,6 +32,11 @@ const pageHref = (value: number) =>
 
 <HomeLayout
     title={page > 1 ? `${heading} - ${page}ページ目` : heading}
+    description={
+        tag
+            ? `「${tagLabel(tag)}」タグの公開記事一覧です${page > 1 ? `（${page}ページ目）` : ""}。`
+            : "タグを手がかりに、読んだ本や試した道具などの公開記事を探せます。"
+    }
     mainId={tag ? "results" : "tags-main"}
     skipLabel={tag ? "記事一覧へ移動" : "タグ一覧へ移動"}
 >

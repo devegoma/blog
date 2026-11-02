@@ -38,7 +38,12 @@ const visiblePosts = tag
       : sortedPosts.slice(0, 10);
 ---
 
-<HomeLayout title={month || tag ? heading : "記事"}>
+<HomeLayout
+    title={month || tag ? heading : "記事"}
+    description={
+        month ? `${monthLabel(month)}に公開した記事の一覧です。` : undefined
+    }
+>
     <SiteHeader active={tag ? "tags" : "articles"} />
     <div class="home-shell">
         <div class="home-grid">
