@@ -134,7 +134,11 @@ for (let index = 1; index <= 9; index++) await addBatch(index);
 assert.deepEqual(await build(), [...single, ...batchUrls].sort());
 await addBatch(10);
 const secondPage = "https://blog.devegoma.com/tags/typescript/page/2/";
-assert.deepEqual(await build(), [...single, ...batchUrls, secondPage].sort());
+const homeSecondPage = "https://blog.devegoma.com/page/2/";
+assert.deepEqual(
+    await build(),
+    [...single, ...batchUrls, secondPage, homeSecondPage].sort(),
+);
 for (let index = 11; index <= 20; index++) await addBatch(index);
 await writePost("untagged.mdx", {
     title: "タグなしの記事",
@@ -147,6 +151,8 @@ assert.deepEqual(
         ...single,
         ...batchUrls,
         secondPage,
+        homeSecondPage,
+        "https://blog.devegoma.com/page/3/",
         "https://blog.devegoma.com/tags/typescript/page/3/",
         "https://blog.devegoma.com/archives/2026-08/",
         "https://blog.devegoma.com/posts/untagged/",
@@ -167,6 +173,7 @@ assert.deepEqual(
         ...fixed,
         ...batchUrls,
         secondPage,
+        homeSecondPage,
         "https://blog.devegoma.com/archives/2026-09/",
         "https://blog.devegoma.com/tags/typescript/",
     ].sort(),

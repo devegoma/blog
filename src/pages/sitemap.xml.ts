@@ -4,6 +4,8 @@ import { getPosts, tagHref } from "../data/posts";
 export const GET: APIRoute = async ({ site }) => {
     const posts = await getPosts();
     const paths = ["/", "/about/", "/tags/"];
+    for (let page = 2; page <= Math.ceil(posts.length / 10); page++)
+        paths.push(`/page/${page}/`);
     paths.push(...posts.map((post) => post.href));
     for (const tag of new Set(posts.flatMap((post) => post.tags))) {
         paths.push(tagHref(tag));

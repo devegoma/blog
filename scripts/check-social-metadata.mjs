@@ -114,6 +114,12 @@ try {
             "https://blog.devegoma.com/tags/typescript/",
         ],
         [
+            "page/2/index.html",
+            "記事 - 2ページ目 | devegoma's blog",
+            "公開記事の一覧です（2ページ目）。",
+            "https://blog.devegoma.com/page/2/",
+        ],
+        [
             "tags/typescript/page/2/index.html",
             "TypeScriptの記事 - 2ページ目 | devegoma's blog",
             "「TypeScript」タグの公開記事一覧です（2ページ目）。",

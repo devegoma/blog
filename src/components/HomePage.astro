@@ -10,8 +10,9 @@ import { getPosts, tagHref } from "../data/posts";
 interface Props {
     month?: string;
     tag?: string;
+    page?: number;
 }
-const { month, tag } = Astro.props;
+const { month, tag, page = 1 } = Astro.props;
 const posts = await getPosts();
 const sortedPosts = posts;
 const tags = [...new Set(posts.flatMap((post) => post.tags))].sort();
@@ -35,13 +36,21 @@ const visiblePosts = tag
     ? sortedPosts.filter((post) => post.tags.includes(tag))
     : month
       ? sortedPosts.filter((post) => post.date.startsWith(`${month}-`))
-      : sortedPosts.slice(0, 10);
+      : sortedPosts.slice((page - 1) * 10, page * 10);
+const pageCount = Math.ceil(posts.length / 10);
+const pageHref = (value: number) => (value === 1 ? "/" : `/page/${value}/`);
 ---
 
 <HomeLayout
-    title={month || tag ? heading : "記事"}
+    title={
+        month || tag ? heading : page > 1 ? `記事 - ${page}ページ目` : "記事"
+    }
     description={
-        month ? `${monthLabel(month)}に公開した記事の一覧です。` : undefined
+        month
+            ? `${monthLabel(month)}に公開した記事の一覧です。`
+            : page > 1
+              ? `公開記事の一覧です（${page}ページ目）。`
+              : undefined
     }
 >
     <SiteHeader active={tag ? "tags" : "articles"} />
@@ -49,15 +58,19 @@ const visiblePosts = tag
         <div class="home-grid">
             <div class="list-heading">
                 <h1 id="recent-posts-heading">{heading}</h1>
-                <button
-                    type="button"
-                    class="post-sort"
-                    value="desc"
-                    aria-controls="article-list"
-                    disabled
-                >
-                    ↓ 新しい順
-                </button>
+                {month || tag ? (
+                    <button
+                        type="button"
+                        class="post-sort"
+                        value="desc"
+                        aria-controls="article-list"
+                        disabled
+                    >
+                        ↓ 新しい順
+                    </button>
+                ) : (
+                    <span class="post-order">↓ 新しい順</span>
+                )}
             </div>
             <div class="sidebar">
                 <Profile />
@@ -68,14 +81,50 @@ const visiblePosts = tag
                 aria-labelledby="recent-posts-heading"
             >
                 <ArticleList posts={visiblePosts} />
-                {month || tag ? (
+                {!month && !tag && (
+                    <>
+                        <p class="home-range">
+                            {posts.length === 0
+                                ? "公開記事はまだありません。"
+                                : `${posts.length}件中 ${(page - 1) * 10 + 1}–${Math.min(page * 10, posts.length)}件を表示`}
+                        </p>
+                        {pageCount > 1 && (
+                            <nav
+                                class="home-pagination"
+                                aria-label="ページ送り"
+                            >
+                                {page > 1 ? (
+                                    <a href={pageHref(page - 1)} rel="prev">
+                                        ← 前のページ
+                                    </a>
+                                ) : (
+                                    <span aria-disabled="true">
+                                        ← 前のページ
+                                    </span>
+                                )}
+                                <span
+                                    aria-current="page"
+                                    aria-label={`${pageCount}ページ中${page}ページ目`}
+                                >
+                                    {page} / {pageCount}
+                                </span>
+                                {page < pageCount ? (
+                                    <a href={pageHref(page + 1)} rel="next">
+                                        次のページ →
+                                    </a>
+                                ) : (
+                                    <span aria-disabled="true">
+                                        次のページ →
+                                    </span>
+                                )}
+                            </nav>
+                        )}
+                    </>
+                )}
+                {(month || tag) && (
                     <a class="all-posts" href="/">
                         最近の記事に戻る
                     </a>
-                ) : (
-                    <span class="all-posts" role="link" aria-disabled="true">
-                        すべての記事を見る <span aria-hidden="true">→</span>
-                    </span>
                 )}
             </main>
             <div class="archive-sidebar">

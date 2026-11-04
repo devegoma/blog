@@ -1,9 +1,22 @@
 import { expect, test } from "@playwright/test";
 
-test("表示順ボタンを押すたびにホーム・月別一覧の記事を並べ替えられる", async ({
+test("ホームは新しい順に固定され、並べ替え操作を表示しない", async ({
     page,
 }) => {
-    for (const path of ["/", "/archives/2026-10/"]) {
+    await page.goto("/");
+    await expect(
+        page.getByRole("button", { name: /新しい順|古い順/ }),
+    ).toHaveCount(0);
+    await expect(page.getByText("↓ 新しい順", { exact: true })).toBeVisible();
+    await expect(page.locator("article time")).toHaveText([
+        "2026.10.28",
+        "2026.10.21",
+        "2026.10.14",
+    ]);
+});
+
+test("月別一覧は従来どおり表示順を切り替えられる", async ({ page }) => {
+    for (const path of ["/archives/2026-10/"]) {
         await page.goto(path);
         const sort = page.getByRole("button", { name: /新しい順|古い順/ });
         await expect(sort).toBeEnabled();
