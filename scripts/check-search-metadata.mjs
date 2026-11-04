@@ -144,6 +144,11 @@ try {
         description: "「TypeScript」タグの公開記事一覧です。",
         canonical: "https://blog.devegoma.com/tags/typescript/",
     });
+    await assertPage("page/2/index.html", {
+        title: "記事 - 2ページ目 | devegoma's blog",
+        description: "公開記事の一覧です（2ページ目）。",
+        canonical: "https://blog.devegoma.com/page/2/",
+    });
     await assertPage("tags/typescript/page/2/index.html", {
         title: "TypeScriptの記事 - 2ページ目 | devegoma's blog",
         description: "「TypeScript」タグの公開記事一覧です（2ページ目）。",

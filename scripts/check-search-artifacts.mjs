@@ -56,6 +56,7 @@ for (const entry of await readdir(directory, {
     const pathname = `/${path.slice(0, -"index.html".length)}`;
     assert(
         ["/", "/about/", "/tags/"].includes(pathname) ||
+            /^\/page\/(?:[2-9]|[1-9]\d+)\/$/.test(pathname) ||
             /^\/posts\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)+$/.test(pathname) ||
             /^\/tags\/[a-z0-9]+(?:-[a-z0-9]+)*\/(?:page\/(?:[2-9]|[1-9]\d+)\/)?$/.test(
                 pathname,

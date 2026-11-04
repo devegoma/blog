@@ -294,7 +294,15 @@ const port = listener.address().port;
 await new Promise((resolve) => listener.close(resolve));
 const server = spawn(
     process.execPath,
-    [cli, "dev", "--host", "127.0.0.1", "--port", String(port)],
+    [
+        cli,
+        "dev",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        String(port),
+        "--ignore-lock",
+    ],
     {
         cwd: root,
         stdio: "ignore",
@@ -359,6 +367,7 @@ async function assertPreviewStatus(status) {
         [
             cli,
             "preview",
+            "--ignore-lock",
             "--outDir",
             output,
             "--host",

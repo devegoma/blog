@@ -160,6 +160,7 @@ async function startServer() {
         [
             join(root, "node_modules/astro/bin/astro.mjs"),
             "dev",
+            "--ignore-lock",
             "--host",
             "127.0.0.1",
             "--port",
