@@ -16,18 +16,27 @@ import "../styles/about.css";
             <h1>このブログについて</h1>
             <section class="panel about-card" aria-labelledby="author">
                 <div class="identity">
-                    <div class="avatar" aria-hidden="true">
-                        d
-                    </div>
+                    <img
+                        class="avatar"
+                        src="/images/profile.png"
+                        alt=""
+                        width="96"
+                        height="96"
+                    />
                     <div>
                         <p class="eyebrow">PROFILE</p>
                         <h2 id="author">devegoma</h2>
+                        <small class="avatar-credit">
+                            プロフィール画像はChatGPTで生成しました。
+                        </small>
                     </div>
                 </div>
                 <p class="intro">
-                    読んだ本、試した道具。
+                    1998年生まれのSE
                     <br />
-                    日々の学びを記録しています。
+                    組み込みとAWSを生業としています。
+                    <br />
+                    趣味で学んだWeb系の知識や読んだ本についてこちらのブログに書いていきます。
                 </p>
                 <section class="links-section" aria-labelledby="elsewhere">
                     <h3 id="elsewhere">外部リンク</h3>
@@ -85,7 +94,6 @@ import "../styles/about.css";
         </main>
         <footer class="about-footer">
             <span>© devegoma</span>
-            <small>開発用サンプル。プロフィールは表示確認用です。</small>
         </footer>
     </div>
 </HomeLayout>

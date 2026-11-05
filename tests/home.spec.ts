@@ -1,5 +1,44 @@
 import { expect, test } from "@playwright/test";
 
+test("プロフィール画像はモバイルで半幅、PCで全幅になり、自己紹介文が画面内に収まる", async ({
+    page,
+}) => {
+    for (const path of ["/", "/posts/sample/"]) {
+        await page.goto(path);
+        const profile = page.locator(".profile");
+        const image = await profile.locator(".avatar").boundingBox();
+        const contentWidth = await profile.evaluate((el) => {
+            const style = getComputedStyle(el);
+            return (
+                el.clientWidth -
+                parseFloat(style.paddingLeft) -
+                parseFloat(style.paddingRight)
+            );
+        });
+        const imageRatio = page.viewportSize()!.width < 1200 ? 0.5 : 1;
+        expect(image!.width).toBeCloseTo(contentWidth * imageRatio, 0);
+        expect(image!.height).toBeCloseTo(image!.width, 0);
+        if (page.viewportSize()!.width < 1200) {
+            const content = await profile
+                .locator(".profile-content")
+                .boundingBox();
+            expect(content!.x).toBeGreaterThanOrEqual(image!.x + image!.width);
+            expect(content!.y).toBeCloseTo(image!.y, 0);
+        }
+        expect(
+            await profile.evaluate((el) => el.scrollWidth <= el.clientWidth),
+        ).toBe(true);
+        expect(
+            await page.evaluate(
+                () => document.documentElement.scrollWidth <= innerWidth,
+            ),
+        ).toBe(true);
+        if (page.viewportSize()!.width >= 1200) {
+            expect((await profile.boundingBox())!.width).toBe(240);
+        }
+    }
+});
+
 test("ホームは新しい順に固定され、並べ替え操作を表示しない", async ({
     page,
 }) => {
