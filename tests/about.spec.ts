@@ -19,7 +19,7 @@ test("ホームからプロフィールを開き、外部リンクを確認し�
         "このブログについて",
     );
     await expect(page.locator(".intro")).toHaveText(
-        /読んだ本、試した道具。\s*日々の学びを記録しています。/,
+        /1998年生まれのSE\s*組み込みとAWSを生業としています。\s*趣味で学んだWeb系の知識や読んだ本についてこちらのブログに書いていきます。/,
     );
     for (const [name, href] of [
         ["GitHub", "https://github.com/devegoma"],
