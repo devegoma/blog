@@ -108,19 +108,6 @@ const socialImage = new URL("/images/social-share.png", Astro.site);
                         }
                         apply();
                     });
-                    const searchButton =
-                        document.querySelector("[data-search-open]");
-                    const searchDialog =
-                        document.getElementById("article-search");
-                    if (
-                        searchButton &&
-                        searchDialog instanceof HTMLDialogElement
-                    ) {
-                        searchButton.hidden = false;
-                        searchButton.addEventListener("click", () =>
-                            searchDialog.showModal(),
-                        );
-                    }
                 });
             })();
         </script>
