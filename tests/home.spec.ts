@@ -39,10 +39,25 @@ test("プロフィール画像はモバイルで半幅、PCで全幅になり、
     }
 });
 
-test("ホームと月別一覧はクリック・Enter・Spaceで表示順を切り替えられる", async ({
+test("ホームは新しい順に表示し、並べ替え操作や表示順ラベルを置かない", async ({
     page,
 }) => {
-    for (const path of ["/", "/archives/2026-10/"]) {
+    await page.goto("/");
+    await expect(
+        page.getByRole("button", { name: /新しい順|古い順/ }),
+    ).toHaveCount(0);
+    await expect(page.getByText("↓ 新しい順", { exact: true })).toHaveCount(0);
+    await expect(page.locator("article time")).toHaveText([
+        "2026.10.28",
+        "2026.10.21",
+        "2026.10.14",
+    ]);
+});
+
+test("月別一覧はクリック・Enter・Spaceで表示順を切り替えられる", async ({
+    page,
+}) => {
+    for (const path of ["/archives/2026-10/"]) {
         await page.goto(path);
         const sort = page.getByRole("button", { name: /新しい順|古い順/ });
         await expect(sort).toBeEnabled();

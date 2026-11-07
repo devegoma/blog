@@ -275,6 +275,12 @@ async function checkNavigation(browser) {
                     await expect(next).toBeFocused();
                     await next.press("Enter");
                     await expect(page).toHaveURL(`${base}/page/2/`);
+                    await expect(
+                        page.getByRole("button", { name: /新しい順|古い順/ }),
+                    ).toHaveCount(0);
+                    await expect(
+                        page.getByText("↓ 新しい順", { exact: true }),
+                    ).toHaveCount(0);
                     const header = page.getByRole("banner");
                     await expect(
                         header
