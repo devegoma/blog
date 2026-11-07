@@ -275,6 +275,27 @@ async function checkNavigation(browser) {
                     await expect(next).toBeFocused();
                     await next.press("Enter");
                     await expect(page).toHaveURL(`${base}/page/2/`);
+                    const header = page.getByRole("banner");
+                    await expect(
+                        header
+                            .getByRole("navigation", { name: "メイン" })
+                            .locator("a[aria-current=page]"),
+                    ).toHaveText("記事");
+                    await expect(
+                        page.getByRole("searchbox", { includeHidden: true }),
+                    ).toHaveCount(0);
+                    await expect(
+                        page.getByRole("button", {
+                            name: /検索/,
+                            includeHidden: true,
+                        }),
+                    ).toHaveCount(0);
+                    await expect(
+                        page.getByRole("dialog", {
+                            name: "記事検索",
+                            includeHidden: true,
+                        }),
+                    ).toHaveCount(0);
                     await expect(page.getByRole("article")).toHaveCount(10);
                     await expect(
                         page.getByLabel("3ページ中2ページ目"),

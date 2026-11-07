@@ -55,91 +55,6 @@
     align-items: center;
     gap: 16px;
 }
-.desktop-search {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 0 14px;
-    border: 1px solid var(--line);
-    border-radius: 5px;
-    background: var(--page);
-    color: var(--muted);
-}
-.desktop-search svg,
-.search-open svg {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-}
-.desktop-search svg {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-}
-.desktop-search input,
-.search-dialog input {
-    width: 260px;
-    min-height: 44px;
-    font: inherit;
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    opacity: 1;
-}
-.desktop-search input::placeholder,
-.search-dialog input::placeholder {
-    color: var(--muted);
-    opacity: 1;
-}
-.header-actions .search-open {
-    display: none;
-    background: var(--panel);
-    border-radius: 50%;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-.search-dialog {
-    margin: auto;
-    width: min(100% - 32px, 480px);
-    max-height: calc(100% - 32px);
-    padding: 24px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--panel);
-    color: var(--ink);
-    overflow-wrap: anywhere;
-}
-.search-dialog::backdrop {
-    background: rgb(0 0 0 / 45%);
-}
-.search-dialog h2 {
-    margin: 0;
-    font-size: 22px;
-}
-.search-dialog p {
-    color: var(--muted);
-}
-.search-dialog input {
-    width: 100%;
-    padding-inline: 12px;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    background: var(--page);
-}
-.search-dialog form {
-    margin-top: 24px;
-    text-align: right;
-}
-.search-close {
-    min-width: 88px;
-    min-height: 44px;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    background: var(--panel);
-    color: var(--ink);
-    font: inherit;
-    cursor: pointer;
-}
 .wordmark {
     display: block;
     color: var(--ink);
@@ -322,8 +237,7 @@
     font-weight: 800;
     margin: 0;
 }
-.post-sort,
-.post-order {
+.post-sort {
     width: 120px;
     flex-shrink: 0;
     min-height: 44px;
@@ -494,12 +408,6 @@
 }
 
 @media (max-width: 1199px) {
-    .desktop-search {
-        display: none;
-    }
-    .header-actions .search-open:not([hidden]) {
-        display: inline-grid;
-    }
     .home-shell {
         width: calc(100% - 32px);
     }

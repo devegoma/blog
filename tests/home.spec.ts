@@ -39,23 +39,10 @@ test("プロフィール画像はモバイルで半幅、PCで全幅になり、
     }
 });
 
-test("ホームは新しい順に固定され、並べ替え操作を表示しない", async ({
+test("ホームと月別一覧はクリック・Enter・Spaceで表示順を切り替えられる", async ({
     page,
 }) => {
-    await page.goto("/");
-    await expect(
-        page.getByRole("button", { name: /新しい順|古い順/ }),
-    ).toHaveCount(0);
-    await expect(page.getByText("↓ 新しい順", { exact: true })).toBeVisible();
-    await expect(page.locator("article time")).toHaveText([
-        "2026.10.28",
-        "2026.10.21",
-        "2026.10.14",
-    ]);
-});
-
-test("月別一覧は従来どおり表示順を切り替えられる", async ({ page }) => {
-    for (const path of ["/archives/2026-10/"]) {
+    for (const path of ["/", "/archives/2026-10/"]) {
         await page.goto(path);
         const sort = page.getByRole("button", { name: /新しい順|古い順/ });
         await expect(sort).toBeEnabled();
@@ -81,53 +68,34 @@ test("月別一覧は従来どおり表示順を切り替えられる", async ({
     }
 });
 
-test("検索は準備中と分かり、モバイルでは開閉して元のボタンへ戻れる", async ({
+test("全画面に検索欄・検索ボタン・準備中の開閉画面を表示しない", async ({
     page,
-    viewport,
 }) => {
-    await page.goto("/");
-    const input = page.getByRole("searchbox", { name: "記事を検索（準備中）" });
-    if (viewport!.width <= 1199) {
-        const open = page.getByRole("button", { name: "検索を開く" });
-        await expect(open).toBeVisible();
-        const box = (await open.boundingBox())!;
-        expect(box.width).toBeGreaterThanOrEqual(44);
-        expect(box.height).toBeGreaterThanOrEqual(44);
-        await expect(input).toBeHidden();
-        await open.press("Enter");
-        const dialog = page.getByRole("dialog", { name: "記事検索" });
-        await expect(dialog).toBeVisible();
-        const dialogBox = (await dialog.boundingBox())!;
-        expect(dialogBox.x + dialogBox.width / 2).toBeCloseTo(
-            viewport!.width / 2,
-            0,
-        );
-        expect(dialogBox.y + dialogBox.height / 2).toBeCloseTo(
-            viewport!.height / 2,
-            0,
-        );
+    for (const path of [
+        "/",
+        "/posts/sample/",
+        "/tags/",
+        "/tags/typescript/",
+        "/about/",
+        "/archives/2026-10/",
+        "/missing-page/",
+    ]) {
+        await page.goto(path);
         await expect(
-            dialog.getByText(
-                "検索は準備中です。記事を探す機能は今後追加します。",
-            ),
-        ).toBeVisible();
-        const close = dialog.getByRole("button", { name: "閉じる" });
-        await expect(close).toBeFocused();
-        await expect(input).toBeDisabled();
-        await close.press("Escape");
-        await expect(dialog).toBeHidden();
-        await expect(open).toBeFocused();
-        await open.press("Space");
-        await close.click();
-        await expect(dialog).toBeHidden();
-        await expect(open).toBeFocused();
-    } else {
-        await expect(input).toBeVisible();
-        await expect(input).toBeDisabled();
-        await expect(input).toHaveAttribute("placeholder", "検索は準備中");
+            page.getByRole("searchbox", { includeHidden: true }),
+        ).toHaveCount(0);
         await expect(
-            page.getByRole("button", { name: "検索を開く" }),
-        ).toBeHidden();
+            page.getByRole("search", { includeHidden: true }),
+        ).toHaveCount(0);
+        await expect(
+            page.getByRole("button", { name: /検索/, includeHidden: true }),
+        ).toHaveCount(0);
+        await expect(
+            page.getByRole("dialog", { name: "記事検索", includeHidden: true }),
+        ).toHaveCount(0);
+        await expect(
+            page.getByText("検索は準備中", { exact: false }),
+        ).toHaveCount(0);
     }
 });
 
@@ -240,6 +208,11 @@ test("保存が使えなくてもヘッダーのボタンで配色を切り替�
         Math.abs(logo.y + logo.height / 2 - box.y - box.height / 2),
     ).toBeLessThan(2);
     await button.press("Space");
+    await expect(
+        page.getByRole("button", { name: "ライトモードに切り替える" }),
+    ).toBeVisible();
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.emulateMedia({ colorScheme: "light" });
     await expect(
         page.getByRole("button", { name: "ライトモードに切り替える" }),
     ).toBeVisible();

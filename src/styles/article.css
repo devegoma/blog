@@ -362,6 +362,9 @@
 .copy-status:empty {
     display: none;
 }
+.article-body pre code {
+    font-family: inherit;
+}
 .article-body pre {
     max-width: 100%;
     overflow-x: auto;
