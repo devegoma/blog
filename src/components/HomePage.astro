@@ -58,19 +58,15 @@ const pageHref = (value: number) => (value === 1 ? "/" : `/page/${value}/`);
         <div class="home-grid">
             <div class="list-heading">
                 <h1 id="recent-posts-heading">{heading}</h1>
-                {month || tag ? (
-                    <button
-                        type="button"
-                        class="post-sort"
-                        value="desc"
-                        aria-controls="article-list"
-                        disabled
-                    >
-                        ↓ 新しい順
-                    </button>
-                ) : (
-                    <span class="post-order">↓ 新しい順</span>
-                )}
+                <button
+                    type="button"
+                    class="post-sort"
+                    value="desc"
+                    aria-controls="article-list"
+                    disabled
+                >
+                    ↓ 新しい順
+                </button>
             </div>
             <div class="sidebar">
                 <Profile />

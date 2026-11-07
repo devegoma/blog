@@ -63,7 +63,7 @@ PC・モバイルの両配色と320px幅、Chromium・Firefoxの12表示、JavaS
 
 ## ホーム画面の旧採用仕様と実装履歴（2026-10-30 検索付きヘッダー）
 
-当時の改修では、[PC・ライト](../../output/zenn-header-trial/desktop-light-search.png)、[PC・ダーク](../../output/zenn-header-trial/desktop-dark-search.png)、[モバイル・ライト](../../output/zenn-header-trial/mobile-light-search.png)、[モバイル・ダーク](../../output/zenn-header-trial/mobile-dark-search.png)を基準とした。以下は当時の仕様と検証結果を保持した履歴である。共通部分は冒頭のIssue #25、ホームの新しい順への固定とページ送りは [Issue #26](../specs/issue-26-home.md) を優先する。
+当時の改修では、[PC・ライト](../../output/zenn-header-trial/desktop-light-search.png)、[PC・ダーク](../../output/zenn-header-trial/desktop-dark-search.png)、[モバイル・ライト](../../output/zenn-header-trial/mobile-light-search.png)、[モバイル・ダーク](../../output/zenn-header-trial/mobile-dark-search.png)を基準とした。以下は当時の仕様と検証結果を保持した履歴である。共通部分は冒頭のIssue #25、ホームの初期表示・並べ替えとページ送りは [Issue #26](../specs/issue-26-home.md) を優先する。
 
 - PC は上段左にコンパクトな文字ロゴ、右に検索欄と配色切り替え、下段に左揃えのナビゲーションを置く。本文は記事一覧を画面中央、プロフィールを左、月別アーカイブとその下のタグを右に置く。プロフィールの上端は記事一覧の枠に揃え、スクロール時は画面上端から24pxの位置に追従する。画面の高さに収まらない場合はサイドバー内でスクロールできる。
 - 1199px以下は縦並びの配置とし、上段にロゴ・検索アイコン・配色切り替え、下段に「記事」「タグ」「このブログについて」を置く。本文は横型プロフィール、記事一覧、月別アーカイブ、タグの順にする。プロフィールは通常のスクロールで流れる。
