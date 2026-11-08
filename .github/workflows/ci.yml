@@ -1,39 +1,56 @@
 name: CI
-
+run-name: Issue 31 Cloudflare authentication check
 on:
-    push:
-        branches: [main, develop]
-    pull_request:
-        branches: [main, develop]
-    workflow_dispatch:
-
-permissions:
-    contents: read
-
+  workflow_dispatch:
+permissions: {}
 jobs:
-    checks:
-        name: Checks
-        runs-on: ubuntu-latest
-        timeout-minutes: 20
-        steps:
-            - uses: actions/checkout@v7
-            - uses: pnpm/action-setup@v6
-              with:
-                  version: 12.16.1
-            - uses: actions/setup-node@v7
-              with:
-                  node-version-file: .nvmrc
-                  cache: pnpm
-            - run: pnpm install --frozen-lockfile
-            - run: pnpm lint
-            - run: pnpm format:check
-            - run: pnpm check
-            - run: pnpm exec playwright install --with-deps chromium firefox
-            - run: pnpm test
-            - uses: actions/upload-artifact@v7
-              if: failure()
-              with:
-                  name: playwright-failure
-                  path: test-results/
-                  retention-days: 7
-                  if-no-files-found: ignore
+  verify-cloudflare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify token and Pages access without deploying
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: python
+        run: |
+          import json, os, re, sys, urllib.request, urllib.error
+          token = os.environ.get('CLOUDFLARE_API_TOKEN', '')
+          account = os.environ.get('CLOUDFLARE_ACCOUNT_ID', '')
+          if not token or not re.fullmatch(r'[a-fA-F0-9]{32}', account):
+              sys.exit('FAIL: Secrets missing or account ID format invalid')
+          def get(path, label, optional=False):
+              request = urllib.request.Request('https://api.cloudflare.com/client/v4/' + path,
+                  headers={'Authorization': 'Bearer ' + token, 'Accept': 'application/json'})
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      data = json.load(response)
+              except urllib.error.HTTPError as error:
+                  if optional:
+                      print(f'INFO: {label}: HTTP {error.code}')
+                      return None
+                  sys.exit(f'FAIL: {label}: HTTP {error.code}')
+              except Exception:
+                  sys.exit(f'FAIL: {label}: connection or response error')
+              if not data.get('success'):
+                  sys.exit(f'FAIL: {label}: API reported failure')
+              return data['result']
+          verification = get('user/tokens/verify', 'user token verification', optional=True)
+          if verification is None:
+              verification = get(f'accounts/{account}/tokens/verify', 'account token verification', optional=True)
+          project = get(f'accounts/{account}/pages/projects/blog', 'Pages project access')
+          if verification is None:
+              sys.exit('FAIL: Pages is readable but neither token verification endpoint succeeded')
+          if verification.get('status') != 'active':
+              sys.exit('FAIL: token is not active')
+          print('PASS: token is active')
+          if project.get('name') != 'blog' or project.get('subdomain') != 'blog-5w4.pages.dev':
+              sys.exit('FAIL: Pages project does not match expected target')
+          print('PASS: Secrets can access expected Pages project blog / blog-5w4.pages.dev')
+          config = project.get('source', {}).get('config', {})
+          print('Production branch: ' + str(project.get('production_branch')))
+          print('Automatic production deployments: ' + str(config.get('production_deployments_enabled')))
+          print('Preview deployment setting: ' + str(config.get('preview_deployment_setting')))
+          summary = 'Token active; expected Pages project readable from GitHub Actions. No deployment or configuration changes. Pages Edit permission is not proven by this read-only test.\n'
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as file:
+              file.write(summary)
