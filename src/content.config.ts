@@ -6,6 +6,7 @@ import { z } from "astro/zod";
 import { getBuildTarget } from "./config/build-target.mjs";
 
 const { verification, postsDirectory } = getBuildTarget();
+const postsDisplayDirectory = postsDirectory.replace(/^\.\//, "");
 
 const posts = defineCollection({
     loader: glob({
@@ -19,11 +20,11 @@ const posts = defineCollection({
                 );
             if (!match)
                 throw new Error(
-                    `記事の配置が不正です: ${postsDirectory}/${path}。フォルダ名・ファイル名には小文字の半角英数字とハイフンを使用してください`,
+                    `記事の配置が不正です: ${postsDisplayDirectory}/${path}。フォルダ名・ファイル名には小文字の半角英数字とハイフンを使用してください`,
                 );
             if (Object.hasOwn(data, "slug"))
                 throw new Error(
-                    `slug は指定できません: ${postsDirectory}/${path}。URLには記事のフォルダとファイル名を使用します`,
+                    `slug は指定できません: ${postsDisplayDirectory}/${path}。URLには記事のフォルダとファイル名を使用します`,
                 );
             return match[1];
         },
