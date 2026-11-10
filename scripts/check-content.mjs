@@ -136,8 +136,8 @@ assert.equal(optional.description, "Explicit description");
 assert.equal(optional.summary, "Explicit description");
 assert.deepEqual(optional.tags, ["astro"]);
 assert.equal(optional.minutes, 2);
-assert.match(optional.image, /^\/_astro\/example\./);
-assert.equal(optional.entry.data.image.src, optional.image);
+assert.match(optional.image.src, /^\/_astro\/example\./);
+assert.deepEqual(optional.image, optional.entry.data.image);
 assert.equal(optional.updated, "2026-09-02");
 await add(
     "astro/routing.mdx",
