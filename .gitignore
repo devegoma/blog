@@ -5,6 +5,7 @@ dist-verification/
 .astro-verification/
 playwright-report/
 test-results/
+tmp/worktrees/
 .env
 .env.*
 !.env.example

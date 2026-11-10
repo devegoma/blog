@@ -6,3 +6,4 @@ dist-verification/
 pnpm-lock.yaml
 playwright-report/
 test-results/
+tmp/worktrees/

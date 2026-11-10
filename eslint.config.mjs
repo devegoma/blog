@@ -11,6 +11,7 @@ export default [
             ".astro-verification/**",
             "playwright-report/**",
             "test-results/**",
+            "tmp/worktrees/**",
         ],
     },
     ...tseslint.configs.recommended,
