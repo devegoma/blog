@@ -6,9 +6,12 @@ export default [
     {
         ignores: [
             "dist/**",
+            "dist-verification/**",
             ".astro/**",
+            ".astro-verification/**",
             "playwright-report/**",
             "test-results/**",
+            "tmp/worktrees/**",
         ],
     },
     ...tseslint.configs.recommended,

@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 import { getPosts, tagHref } from "../data/posts";
 import { tagLabel } from "../data/tags";
 
@@ -38,16 +39,26 @@ const { posts, tagsAfter = false } = Astro.props;
                     </div>
                 )}
             </div>
-            {post.image && (
-                <img
-                    class="thumbnail"
-                    src={post.image}
-                    alt=""
-                    width="1672"
-                    height="941"
-                    loading="lazy"
-                />
-            )}
+            {post.image &&
+                (typeof post.image === "string" ? (
+                    <img
+                        class="thumbnail"
+                        src={post.image}
+                        alt=""
+                        width="1672"
+                        height="941"
+                        loading="lazy"
+                    />
+                ) : (
+                    <Image
+                        class="thumbnail"
+                        src={post.image}
+                        alt=""
+                        width={1672}
+                        height={941}
+                        loading="lazy"
+                    />
+                ))}
         </article>
     ))}
 </div>

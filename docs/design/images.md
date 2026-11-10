@@ -1,6 +1,8 @@
-# 開発用画像
+# 共通画像と検証用画像
 
-`sample-reading.png`、`sample-tools.png`、`sample-planning.png` は組み込み ImageGen で新規生成した表示確認用の画像。本番記事の内容を示すものではない。
+`sample-reading.png`、`sample-tools.png`、`sample-planning.png` は組み込み ImageGen で新規生成した表示確認用の画像です。`tests/fixtures/public/images/` で管理し、検証用だけで配信します。
+
+正式記事の専用画像は記事の近くで管理します。`public/images/` は共通素材の配置先です。この場所のファイルは記事の公開状態にかかわらず本番成果物へコピーされます。
 
 生成指示は「16:9の独立したブログ用サムネイル、夜の読書机／夜のノートパソコン／夕暮れの電車、青とアンバーの配色、文字・ロゴ・UIなし」。画面画像でUIを代用していない。
 

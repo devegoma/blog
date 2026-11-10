@@ -12,6 +12,8 @@ import { dirname, join, resolve } from "node:path";
 import sax from "sax";
 
 // Keep the author's articles and build cache untouched.
+process.env.BLOG_BUILD_TARGET = "production";
+
 const root = resolve(import.meta.dirname, "..");
 await mkdir(join(root, "test-results"), { recursive: true });
 const fixture = await mkdtemp(join(root, "test-results/sitemap-"));

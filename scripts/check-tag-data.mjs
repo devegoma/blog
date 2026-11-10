@@ -3,6 +3,8 @@ import { spawnSync } from "node:child_process";
 import { mkdir, mkdtemp, readFile, writeFile, unlink } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
+process.env.BLOG_BUILD_TARGET = "verification";
+
 const root = resolve(import.meta.dirname, "..");
 await mkdir(join(root, "test-results"), { recursive: true });
 const output = await mkdtemp(join(root, "test-results/tag-data-"));
@@ -53,7 +55,7 @@ export async function GET() {
             ["omitted", undefined],
         ])
             await add(
-                `src/content/posts/${id}-${draft}-${name}.mdx`,
+                `tests/fixtures/content/posts/${id}-${draft}-${name}.mdx`,
                 content(tags, draft),
             );
     }
@@ -100,7 +102,7 @@ export async function GET() {
     for (const draft of [false, true]) {
         const source = join(
             root,
-            `src/content/posts/${id}-${draft}-multiple.mdx`,
+            `tests/fixtures/content/posts/${id}-${draft}-multiple.mdx`,
         );
         await writeFile(
             source,

@@ -15,6 +15,8 @@ import { setTimeout } from "node:timers/promises";
 import sax from "sax";
 
 // Build isolated articles without changing the author's content or cache.
+process.env.BLOG_BUILD_TARGET = "production";
+
 const root = resolve(import.meta.dirname, "..");
 await mkdir(join(root, "test-results"), { recursive: true });
 const fixture = await mkdtemp(join(root, "test-results/rss-"));

@@ -6,7 +6,7 @@ test("通常ページの共有画像をHTTPで取得すると公開用PNGと一�
     page,
     request,
 }) => {
-    const directory = resolve("dist");
+    const directory = resolve("dist-verification");
     const expected = await readFile("public/images/social-share.png");
     const imageUrl = "https://blog.devegoma.com/images/social-share.png";
     const imagePaths = new Set<string>();

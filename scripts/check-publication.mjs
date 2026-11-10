@@ -14,11 +14,13 @@ import { createServer } from "node:net";
 import { resolve, join, dirname } from "node:path";
 import { setTimeout } from "node:timers/promises";
 
+process.env.BLOG_BUILD_TARGET = "verification";
+
 const root = resolve(import.meta.dirname, "..");
 const cli = join(root, "node_modules/astro/bin/astro.mjs");
 const folderId = `publication-check-${process.pid}`;
 const id = `${folderId}/entry`;
-const postsRoot = join(root, "src/content/posts");
+const postsRoot = join(root, "tests/fixtures/content/posts");
 const sourceFolder = join(postsRoot, folderId);
 const source = join(sourceFolder, "entry.mdx");
 const markdownId = `${folderId}/markdown`;
@@ -181,7 +183,10 @@ try {
             await writeFile(invalidSource, content("Invalid path"), {
                 flag: "wx",
             });
-            build(`記事の配置が不正です: src/content/posts/${path}`, path);
+            build(
+                `記事の配置が不正です: tests/fixtures/content/posts/${path}`,
+                path,
+            );
         } finally {
             await unlink(invalidSource);
             if (createFolder) await rmdir(folder);
