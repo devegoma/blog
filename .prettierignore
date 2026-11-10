@@ -1,6 +1,8 @@
 node_modules/
 dist/
+dist-verification/
 .astro/
+.astro-verification/
 pnpm-lock.yaml
 playwright-report/
 test-results/

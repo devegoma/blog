@@ -6,7 +6,9 @@ export default [
     {
         ignores: [
             "dist/**",
+            "dist-verification/**",
             ".astro/**",
+            ".astro-verification/**",
             "playwright-report/**",
             "test-results/**",
         ],

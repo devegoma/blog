@@ -1,6 +1,6 @@
 # devegoma's blog
 
-学習の記録を積み重ねる個人ブログ。確定デザインに基づくホーム・記事詳細とタグの導線を実装しています。記事と画像は表示確認用サンプルで、本番公開前の状態です。
+学習の記録を積み重ねる個人ブログ。確定デザインに基づくホーム・記事詳細とタグの導線を実装しています。正式記事と表示確認用サンプルの入力・成果物を分けています。本番公開前の状態です。
 
 ## セットアップ（Windows / PowerShell）
 
@@ -17,23 +17,36 @@ pnpm dev
 ```
 
 Node.js は `v24.22.1`、pnpm は `12.16.1` が表示されることを確認してください。
-通常は http://localhost:4321/ を開きます。ホームから各記事へ移動できます。今回の記事詳細デザインは `/posts/automation/` で確認できます。
+通常は http://localhost:4321/ を開きます。`pnpm dev` は正式記事と下書きの執筆用です。サンプルは `pnpm dev:verification` で確認できます。記事詳細デザインの確認先は `/posts/automation/` です。
 Linux でブラウザを導入する場合は `pnpm exec playwright install --with-deps chromium firefox` を使います。
 Windows版Codexから実行する場合は、ブラウザ導入前に下記「Windows版Codexでのブラウザ保存先」を確認してください。
 
 ## コマンド
 
-| コマンド            | 内容                                               |
-| ------------------- | -------------------------------------------------- |
-| `pnpm dev`          | 開発サーバー                                       |
-| `pnpm lint`         | 推奨ルールで検査。警告も失敗扱い                   |
-| `pnpm format`       | Prettier で整形                                    |
-| `pnpm format:check` | 整形を検査                                         |
-| `pnpm check`        | Astro / TypeScript の型チェック                    |
-| `pnpm build`        | 静的ファイルを `dist/` に生成                      |
-| `pnpm preview`      | ビルド済み成果物のプレビュー                       |
-| `pnpm test`         | ビルド後、Chromium・Firefox × 3サイズの6構成で検証 |
-| `pnpm test:ui`      | Playwright UI（先に `pnpm build` を実行）          |
+| コマンド                    | 内容                                                                    |
+| --------------------------- | ----------------------------------------------------------------------- |
+| `pnpm dev`                  | 正式記事と下書きの執筆用サーバー                                        |
+| `pnpm dev:verification`     | サンプル確認用サーバー                                                  |
+| `pnpm lint`                 | 推奨ルールで検査。警告も失敗扱い                                        |
+| `pnpm format`               | Prettier で整形                                                         |
+| `pnpm format:check`         | 整形を検査                                                              |
+| `pnpm check`                | Astro / TypeScript の型チェック                                         |
+| `pnpm build`                | 正式記事の公開対象だけを `dist/` に生成                                 |
+| `pnpm preview`              | 本番用の `dist/` を確認                                                 |
+| `pnpm build:verification`   | サンプルだけを `dist-verification/` に生成                              |
+| `pnpm preview:verification` | 検証用の `dist-verification/` を確認                                    |
+| `pnpm test`                 | 本番と検証の自動検査、Chromium・Firefox × 3サイズの画面テストを直列実行 |
+| `pnpm test:ui`              | Playwright UI（先に `pnpm build:verification` を実行）                  |
+
+### 本番用と検証用の分離
+
+正式記事は `src/content/posts/`、サンプルは `tests/fixtures/content/posts/` に置きます。本番用は正式記事だけ、検証用はサンプルだけを読み込みます。現在の4記事はすべてサンプルで、正式記事は0件です。正式記事0件でもホーム・プロフィール・タグ一覧・RSS・サイトマップ・404を生成し、ホームには「公開記事はまだありません。」と表示します。
+
+本番用の `dist/` には、下書き・サンプルの記事ページ、一覧掲載、RSS項目、サイトマップ項目、専用画像を含めません。検証用の `dist-verification/` は画面確認とサンプル依存テスト用です。本番用と検証用の生成は互いの出力先を上書きしません。
+
+`pnpm test` は既存検査、本番への混入検査、両用途の生成・成果物検査、検証用成果物の画面テストを直列実行します。CIでも同じコマンドを使用します。入力を一時変更する公開状態・下書き・タグの検査と、保存先 `test-results/` を初期化する画面テストは、同じ作業コピーで他のビルド・テストと並行実行しないでください。通常開発とサンプル開発も同じ作業コピーでは同時起動せず、並行作業には別のworktreeを使ってください。データキャッシュは用途ごとに分けますが、Astroが生成する型情報とコンテンツ参照情報は `.astro/` を共有します。
+
+仕様、worktreeごとのゴール、検証結果は [Issue #66の記録](docs/specs/issue-66-build-targets.md) を参照してください。
 
 `pnpm test:unit` で Node.js 標準テストランナーによるテストを実行できます。成果物検査コマンドの正常・異常系も含むため、Chromiumを先にインストールしてください。`pnpm test` はこの検査も先に実行します。
 
@@ -49,7 +62,7 @@ RSSの固定URLは `https://blog.devegoma.com/rss.xml` です。ローカルで�
 
 `pnpm build` 後の `pnpm test:search-artifacts` は、実際の `dist/` を検査します。HTML全件とサイトマップの集合、canonical・必須メタ情報・404、XMLの構造、robots.txt、同じ成果物を配信したローカルHTTP応答を確認します。別の出力先には `node scripts/check-search-artifacts.mjs <ディレクトリ>` を使用できます。本番ドメインへの通信は行いません。`pnpm test`は通常ビルドの直後にもこの検査を実行してから画面テストへ進みます。
 
-`pnpm test:publication` は、一時記事を使って固定URL・公開データ検証・下書き除外・削除後の出力・開発プレビューを確認します。出力先は `test-results/` です。`pnpm test` では、この確認後に通常の本番ビルドとブラウザテストを実行します。同じ作業コピーで並行して実行しないでください。
+`pnpm test:publication` は、一時記事を使って固定URL・公開データ検証・下書き除外・削除後の出力・開発プレビューを確認します。出力先は `test-results/` です。`pnpm test` では、この確認後に本番用と検証用の生成・検査を行い、検証用成果物で画面テストを実行します。同じ作業コピーで並行して実行しないでください。
 
 ## 記事を書く
 
@@ -74,7 +87,7 @@ updated: "2026-10-28"
 tags: [typescript, astro]
 description: 毎日の作業を少し楽にした記録。
 minutes: 4
-image: /images/sample-tools.png
+image: ./images/thumbnail.png
 draft: false
 ---
 ```
@@ -91,7 +104,11 @@ SHOW_DRAFTS=true
 
 `true` または未設定なら下書きの本文ページを表示し、`false` なら404にします。値は小文字の `true` / `false` を使い、変更後は `pnpm dev` を再起動してください。その他の値は非表示として扱います。ホーム・タグ・月別一覧は常に公開記事だけを表示します。本番ビルドは `SHOW_DRAFTS=true` でも下書きを除外します。記事ごとの公開状態は引き続き frontmatter の `draft` で指定し、`.env` はGit管理しません。
 
-更新日・タグ・説明文・読了時間・画像は任意です。読了時間は省略時に文字数から概算します。記事一覧とページ説明には、説明文を優先する共通概要を使います。説明文が未指定・空白のみなら、本文の通常の段落から最大120文字を抽出し、抽出できなければタイトルを使います。末尾に `...` は付けません。説明文と代用のタイトルは120文字で切りません。RSS・SNS共有の実装でも同じ概要を利用します。抽出対象と利用方法は [Issue #27 の仕様](docs/specs/issue-27-summary.md) を参照してください。`image` は一覧のサムネイル用で、記事内の画像は本文の任意の位置へMarkdownまたは `figure` で配置します。
+更新日・タグ・説明文・読了時間・画像は任意です。読了時間は省略時に文字数から概算します。記事一覧とページ説明には、説明文を優先する共通概要を使います。説明文が未指定・空白のみなら、本文の通常の段落から最大120文字を抽出し、抽出できなければタイトルを使います。末尾に `...` は付けません。説明文と代用のタイトルは120文字で切りません。RSS・SNS共有の実装でも同じ概要を利用します。抽出対象と利用方法は [Issue #27 の仕様](docs/specs/issue-27-summary.md) を参照してください。
+
+`image` は一覧のサムネイル用です。正式記事の画像は記事の近くに置き、記事ファイルからの `./` 始まりの相対パスで指定します。例えば `src/content/posts/learning/entry.mdx` の `image: ./images/thumbnail.png` は `src/content/posts/learning/images/thumbnail.png` を参照します。本文画像は `![画像の説明](./images/photo.png)` のように書きます。HTMLの `<img src="./images/photo.png">` は記事のソース位置を参照しないため、この書き方で記事専用画像を指定しないでください。
+
+記事専用画像を `public/` に置くと、下書きでもそのまま配信されます。`public/` はプロフィールなどの共通素材だけに使います。サンプル専用画像は `tests/fixtures/public/images/` で管理し、検証用だけで従来の `/images/sample-*.png` を使用します。
 
 タグは `src/data/tags.ts` の固定名で参照します。同じ記事内で重複したタグは、最初の指定順を保って除去します。表示名を変更しても `/tags/<固定名>/` は維持します。公開記事で使われているタグだけが本番出力されます。本文の表とコードは、それぞれの枠内で横スクロールできます。コードにはコピーボタン、モバイル目次にはJavaScriptなしでも使える開閉を用意しています。
 
@@ -134,7 +151,7 @@ MDXの `aside` に `data-color` を付けると、赤・黄色・緑・青の4�
 </aside>
 ```
 
-4種類の表示例は `/posts/sample/` で確認できます。色だけに頼らず、見出しにも「警告」「注意」などの用途を書いてください。
+4種類の表示例は `pnpm dev:verification` または検証用プレビューの `/posts/sample/` で確認できます。色だけに頼らず、見出しにも「警告」「注意」などの用途を書いてください。
 
 Playwright は 127.0.0.1:4321 で専用のプレビューを起動します。テスト時はこのポートを空けてください。
 失敗時は `test-results/` にスクリーンショットと trace を保存します。
@@ -186,7 +203,7 @@ CI が表示された後、リポジトリ側で main の直接 push を禁止�
 2026-10-30 に Lint・整形・型チェック、単体テスト2件、Chromium／Firefox × 3サイズの計30ブラウザテストが成功しました。PC 1444px・モバイル390px／320pxの両配色も目視確認済みです。実装記録は [作業計画](docs/work-plan.md)、開発用素材とフォントの出典は `public/images/README.md`・`public/fonts/README.md` を参照してください。
 
 記事・タグ・下書き・RSS・サイトマップをローカルで検証できる状態です。現在の独自テーマのみを使用し、既存テーマの選定は行いません。本番公開は未実施です。
-サンプルを含む現在の `dist/` は動作確認用で、本番へのデプロイ処理は接続していません。
-Cloudflare 接続時には、サンプルを含まない本番成果物の検証と同一成果物の公開、同時公開の制限、最新 main の確認を追加します。Issue #26ではサンプルを維持し、記事・画像の除外と記事一覧・RSS・サイトマップなどへの混入検査は、公開前に必ず完了する別タスクとして管理します。
+本番用の `dist/` と、サンプルを含む検証用の `dist-verification/` を分離しています。本番へのデプロイ処理は接続していません。
+Cloudflare 接続時には、検証した同一の本番成果物の公開、同時公開の制限、最新 main の確認を追加します。
 
 詳細は [要件定義](docs/requirements.md) と [未確定・保留事項](docs/open-items.md) を参照してください。
