@@ -111,6 +111,7 @@ async function digest(directory) {
 const html = (path) => readFile(join(production, path, "index.html"), "utf8");
 const excludedSamples = [
     sampleMarker,
+    "Verification fixture",
     "fixture-only",
     "/posts/sample/",
     "/posts/automation/",
@@ -122,6 +123,8 @@ const excludedSamples = [
 ];
 const excludedDrafts = [
     draftMarker,
+    "Private target article",
+    "Omitted draft target article",
     "/posts/private/entry/",
     "/posts/omitted/entry/",
     "private-cover",
@@ -222,6 +225,8 @@ assert.deepEqual(
 );
 await assertAbsent(verification, [
     publishedMarker,
+    "Public target article",
+    "Public target description",
     draftMarker,
     "/posts/published/entry/",
     "published-cover",
@@ -248,6 +253,8 @@ await assertAbsent(production, [
     ...excludedSamples,
     ...excludedDrafts,
     publishedMarker,
+    "Public target article",
+    "Public target description",
     "/posts/published/entry/",
     "published-cover",
     "published-body",
@@ -261,6 +268,8 @@ await assertAbsent(production, [
     ...excludedSamples,
     ...excludedDrafts,
     publishedMarker,
+    "Public target article",
+    "Public target description",
     "/posts/published/entry/",
     "published-cover",
     "published-body",
