@@ -3,8 +3,9 @@ import { z } from "astro/zod";
 /**
  * @param {Record<string, unknown>} tagDefinitions
  * @param {Date} [now] Fixed test clock; omitted time is read on each validation.
+ * @param {import("astro/zod").z.ZodType<string | import("astro").ImageMetadata>} [imageSchema]
  */
-export function createPostSchema(tagDefinitions, now) {
+export function createPostSchema(tagDefinitions, now, imageSchema) {
     return z
         .object({
             title: z.string().trim().min(1),
@@ -24,7 +25,7 @@ export function createPostSchema(tagDefinitions, now) {
                 .default([])
                 .transform((ids) => [...new Set(ids)]),
             minutes: z.number().int().positive().optional(),
-            image: z.string().startsWith("/images/").optional(),
+            image: (imageSchema ?? z.string().startsWith("./")).optional(),
             draft: z.boolean().default(true),
         })
         .superRefine((data, ctx) => {

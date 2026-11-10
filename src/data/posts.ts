@@ -22,6 +22,10 @@ export async function getPosts({ includeDrafts = false } = {}) {
             });
             return {
                 ...entry.data,
+                image:
+                    typeof entry.data.image === "string"
+                        ? entry.data.image
+                        : entry.data.image?.src,
                 id,
                 date: entry.data.date ?? "",
                 summary,
