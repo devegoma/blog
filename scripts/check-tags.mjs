@@ -3,6 +3,8 @@ import { spawnSync } from "node:child_process";
 import { mkdir, mkdtemp, readFile, writeFile, unlink } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
+process.env.BLOG_BUILD_TARGET = "verification";
+
 const root = resolve(import.meta.dirname, "..");
 await mkdir(join(root, "test-results"), { recursive: true });
 const output = await mkdtemp(join(root, "test-results/tags-"));
@@ -24,7 +26,7 @@ function build() {
 }
 async function add(index) {
     const slug = `${id}-${String(index).padStart(2, "0")}`;
-    const path = join(root, "src/content/posts", `${slug}.mdx`);
+    const path = join(root, "tests/fixtures/content/posts", `${slug}.mdx`);
     sources.push(path);
     await writeFile(
         path,

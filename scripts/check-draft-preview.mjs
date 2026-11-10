@@ -7,9 +7,11 @@ import { join, resolve } from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { chromium, firefox, expect } from "@playwright/test";
 
+process.env.BLOG_BUILD_TARGET = "verification";
+
 const root = resolve(import.meta.dirname, "..");
 const id = `draft-check-${process.pid}`;
-const directory = join(root, "src/content/posts", id);
+const directory = join(root, "tests/fixtures/content/posts", id);
 const envFile = join(root, `.env.${id}`);
 const childEnv = { ...process.env };
 delete childEnv.SHOW_DRAFTS;

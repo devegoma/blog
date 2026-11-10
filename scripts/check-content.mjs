@@ -12,6 +12,8 @@ import {
 import { dirname, join, resolve } from "node:path";
 
 // Keep fixtures out of the author's content and Astro cache.
+process.env.BLOG_BUILD_TARGET = "production";
+
 const root = resolve(import.meta.dirname, "..");
 await mkdir(join(root, "test-results"), { recursive: true });
 const fixture = await mkdtemp(join(root, "test-results/content-"));
@@ -74,9 +76,13 @@ for (const path of [
 await add("draft.mdx", "title: Minimal draft");
 await add("explicit-draft.mdx", "title: Explicit draft\ndraft: true");
 await add("ignored.md", "title: Ignored Markdown\nslug: ignored");
+await cp(
+    join(root, "public/images/social-share.png"),
+    join(posts, "example.png"),
+);
 await add(
     "optional.mdx",
-    `${published}\nupdated: "2026-09-02"\ndescription: Explicit description\ntags: [astro]\nminutes: 2\nimage: /images/example.png`,
+    `${published}\nupdated: "2026-09-02"\ndescription: Explicit description\ntags: [astro]\nminutes: 2\nimage: ./example.png`,
 );
 build();
 const { entries, published: publicEntries } = await snapshot();
@@ -130,7 +136,8 @@ assert.equal(optional.description, "Explicit description");
 assert.equal(optional.summary, "Explicit description");
 assert.deepEqual(optional.tags, ["astro"]);
 assert.equal(optional.minutes, 2);
-assert.equal(optional.image, "/images/example.png");
+assert.match(optional.image, /^\/_astro\/example\./);
+assert.equal(optional.entry.data.image.src, optional.image);
 assert.equal(optional.updated, "2026-09-02");
 await add(
     "astro/routing.mdx",

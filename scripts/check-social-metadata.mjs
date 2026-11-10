@@ -7,6 +7,8 @@ import { createServer } from "node:net";
 import { setTimeout } from "node:timers/promises";
 import { chromium } from "@playwright/test";
 
+process.env.BLOG_BUILD_TARGET = "production";
+
 const root = resolve(import.meta.dirname, "..");
 await mkdir(join(root, "test-results"), { recursive: true });
 const fixture = await mkdtemp(join(root, "test-results/social-metadata-"));

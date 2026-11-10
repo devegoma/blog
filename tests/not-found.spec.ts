@@ -2,7 +2,9 @@ import { expect, test } from "@playwright/test";
 import { mkdir, readFile } from "node:fs/promises";
 
 test("存在しないURLを404で案内し、ホームへ戻れる", async ({ page }) => {
-    expect(await readFile("dist/404.html", "utf8")).toContain("error-title");
+    expect(await readFile("dist-verification/404.html", "utf8")).toContain(
+        "error-title",
+    );
     for (const path of [
         "/missing-page/",
         "/posts/deleted-article/",
