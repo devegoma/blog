@@ -1,4 +1,5 @@
-import { spawnSync } from "node:child_process";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { readFile, readdir } from "node:fs/promises";
 import { resolve, join, relative, dirname } from "node:path";
 import { parseFrontmatter } from "astro/markdown";
@@ -8,6 +9,7 @@ import { comparePosts } from "../src/utils/post-order.mjs";
 import { generateSummary } from "../src/utils/post-summary.mjs";
 import { mdxToMdast } from "satteri";
 import { chromium } from "@playwright/test";
+import { formatPageTitle } from "../src/utils/page-title.mjs";
 
 const directory = resolve(process.argv[2] ?? "dist");
 const root = resolve(process.argv[3] ?? join(import.meta.dirname, ".."));
@@ -39,11 +41,63 @@ try {
     const publicPosts = posts
         .filter((post) => post.published)
         .sort(comparePosts);
+    const publicText = normalize(
+        publicPosts
+            .map(
+                (post) =>
+                    `${post.title}\n${post.description ?? ""}\n${textChunks(post.body).join("\n")}`,
+            )
+            .join("\n"),
+    );
+    const forbidden = posts
+        .filter((post) => !post.published)
+        .flatMap((post) =>
+            [post.title, post.description ?? "", ...textChunks(post.body)]
+                .map(normalize)
+                .filter(
+                    (chunk) =>
+                        chunk.length >= 16 && !publicText.includes(chunk),
+                )
+                .map((chunk) => ({ chunk, href: post.href })),
+        );
+    const forbiddenUrls = posts
+        .filter(
+            (post) =>
+                !post.published &&
+                !publicPosts.some((entry) => entry.href === post.href),
+        )
+        .map((post) => post.href);
+    const inspectText = (value, file) => {
+        const text = normalize(value);
+        for (const href of forbiddenUrls)
+            assert(
+                !text.includes(href),
+                `${file}: unpublished article URL ${href}`,
+            );
+        for (const { chunk, href } of forbidden)
+            assert(
+                !text.includes(chunk),
+                `${file}: unpublished article body ${href}`,
+            );
+    };
     const rssItems = [];
     const parser = sax.parser(true);
     const stack = [];
     let rssItem;
+    let channels = 0;
     parser.onopentag = ({ name }) => {
+        if (!stack.length)
+            assert.equal(name, "rss", "rss.xml: root must be rss");
+        if (stack.length === 1) {
+            assert.equal(name, "channel", "rss.xml: rss requires channel");
+            channels++;
+        }
+        if (name === "item")
+            assert.equal(
+                stack.join("/"),
+                "rss/channel",
+                "rss.xml: item outside channel",
+            );
         stack.push(name);
         if (name === "item") rssItems.push((rssItem = {}));
         else if (rssItem && stack.at(-2) === "item") {
@@ -65,6 +119,7 @@ try {
     } catch (error) {
         throw new Error(`rss.xml: ${error.message}`);
     }
+    assert.equal(channels, 1, "rss.xml: exactly one channel is required");
     assert.equal(
         rssItems.length,
         Math.min(publicPosts.length, 20),
@@ -126,13 +181,6 @@ try {
         [...expected].sort(),
         "HTML files: published input and output pages differ",
     );
-    const textOutput = (
-        await Promise.all(
-            output
-                .filter((file) => /\.(?:html|css)$/i.test(file))
-                .map((file) => readFile(file, "utf8")),
-        )
-    ).join("\n");
     const common = new Set(
         (await files(join(root, "public"))).map((file) =>
             relative(join(root, "public"), file).replaceAll("\\", "/"),
@@ -147,11 +195,6 @@ try {
                 await readFile(file),
                 await readFile(join(root, "public", path)),
                 `${path}: common image differs from input`,
-            );
-        else
-            assert(
-                textOutput.includes(`/${path}`),
-                `${path}: unreferenced article image`,
             );
     }
     const allowedSources = new Set();
@@ -173,12 +216,42 @@ try {
     const browser = await chromium.launch();
     try {
         const page = await browser.newPage({ javaScriptEnabled: false });
+        page.setDefaultTimeout(3000);
         await page.route("**/*", (route) => route.abort());
         for (const path of actual.concat("404.html")) {
             await page.setContent(
                 await readFile(join(directory, path), "utf8"),
             );
             const pathname = `/${path.replace(/index\.html$/, "")}`;
+            inspectText(await page.locator("body").textContent(), path);
+            const article = publicPosts.find((post) => post.href === pathname);
+            if (article) {
+                assert.equal(
+                    await page.locator("h1#article-title").textContent(),
+                    article.title.trim(),
+                    `${path}: h1 differs from public article title`,
+                );
+                assert.equal(
+                    await page.locator("head title").textContent(),
+                    formatPageTitle(article.title.trim()),
+                    `${path}: title differs from public article title`,
+                );
+                assert.equal(
+                    await page
+                        .locator('head meta[name="description"]')
+                        .getAttribute("content"),
+                    generateSummary(article),
+                    `${path}: description differs from public article summary`,
+                );
+                const body = normalize(
+                    await page.locator(".article-body").textContent(),
+                );
+                for (const chunk of textChunks(article.body))
+                    assert(
+                        body.includes(normalize(chunk)),
+                        `${path}: public article body missing input text`,
+                    );
+            }
             let listing;
             if (path === "index.html") listing = publicPosts.slice(0, 10);
             const homePage = /^\/page\/(\d+)\/$/.exec(pathname);
@@ -290,38 +363,33 @@ try {
     }
     for (const file of output) {
         const bytes = await readFile(file);
-        for (const post of posts.filter((post) => !post.published)) {
-            if (
-                !publicPosts.some((entry) => entry.href === post.href) &&
-                bytes.includes(Buffer.from(post.href))
-            )
+        inspectText(bytes.toString("utf8"), relative(directory, file));
+        if (/\.(?:json|map|webmanifest)$/i.test(file)) {
+            let value;
+            try {
+                value = JSON.parse(bytes.toString("utf8"));
+            } catch (error) {
                 throw new Error(
-                    `${relative(directory, file)}: unpublished article URL ${post.href}`,
+                    `${relative(directory, file)}: invalid JSON: ${error.message}`,
                 );
-            const publicText = publicPosts
-                .map(
-                    (entry) =>
-                        `${entry.title}\n${entry.description ?? ""}\n${textChunks(entry.body).join("\n")}`,
-                )
-                .join("\n");
-            for (const chunk of textChunks(post.body)) {
-                if (
-                    chunk.length >= 16 &&
-                    !normalize(publicText).includes(normalize(chunk)) &&
-                    normalize(bytes.toString("utf8")).includes(normalize(chunk))
-                )
-                    throw new Error(
-                        `${relative(directory, file)}: unpublished article body ${post.href}`,
-                    );
             }
+            const inspectValue = (entry) => {
+                if (typeof entry === "string")
+                    inspectText(entry, relative(directory, file));
+                else if (entry && typeof entry === "object")
+                    for (const [key, child] of Object.entries(entry)) {
+                        inspectText(key, relative(directory, file));
+                        inspectValue(child);
+                    }
+            };
+            inspectValue(value);
         }
     }
-    const result = spawnSync(
+    await promisify(execFile)(
         process.execPath,
         [join(import.meta.dirname, "check-search-artifacts.mjs"), directory],
-        { encoding: "utf8" },
+        { encoding: "utf8", timeout: 120000, maxBuffer: 10 * 1024 * 1024 },
     );
-    if (result.status !== 0) throw new Error(result.stdout + result.stderr);
     console.log(
         `Production artifact checks passed: ${directory} (input: ${root}).`,
     );
@@ -366,9 +434,9 @@ function imageReferences(post) {
     };
     collect(tree);
     const visit = (node) => {
-        if (node.type === "image") images.push(node.url);
+        if (node.type === "image") images.push(decodeURI(node.url));
         if (node.type === "imageReference" && definitions.has(node.identifier))
-            images.push(definitions.get(node.identifier));
+            images.push(decodeURI(definitions.get(node.identifier)));
         if (node.type === "mdxjsEsm")
             for (const match of node.value.matchAll(
                 /\bfrom\s*["']([^"']+\.(?:png|jpe?g|gif|webp|avif|svg))["']/gi,

@@ -1,7 +1,7 @@
 import sharp from "astro/assets/services/sharp";
 import { relative } from "node:path";
 
-// Astro 7 preserves fsPath on image metadata; keep its use at this adapter.
+// shortcut: relies on Astro 7's fsPath; revalidate when upgrading Astro.
 export default {
     ...sharp,
     getHTMLAttributes(options, config, logger) {
