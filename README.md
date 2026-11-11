@@ -23,20 +23,22 @@ Windows版Codexから実行する場合は、ブラウザ導入前に下記「Wi
 
 ## コマンド
 
-| コマンド                    | 内容                                                                    |
-| --------------------------- | ----------------------------------------------------------------------- |
-| `pnpm dev`                  | 正式記事と下書きの執筆用サーバー                                        |
-| `pnpm dev:verification`     | サンプル確認用サーバー                                                  |
-| `pnpm lint`                 | 推奨ルールで検査。警告も失敗扱い                                        |
-| `pnpm format`               | Prettier で整形                                                         |
-| `pnpm format:check`         | 整形を検査                                                              |
-| `pnpm check`                | Astro / TypeScript の型チェック                                         |
-| `pnpm build`                | 正式記事の公開対象だけを `dist/` に生成                                 |
-| `pnpm preview`              | 本番用の `dist/` を確認                                                 |
-| `pnpm build:verification`   | サンプルだけを `dist-verification/` に生成                              |
-| `pnpm preview:verification` | 検証用の `dist-verification/` を確認                                    |
-| `pnpm test`                 | 本番と検証の自動検査、Chromium・Firefox × 3サイズの画面テストを直列実行 |
-| `pnpm test:ui`              | Playwright UI（先に `pnpm build:verification` を実行）                  |
+| コマンド                               | 内容                                                                    |
+| -------------------------------------- | ----------------------------------------------------------------------- |
+| `pnpm dev`                             | 正式記事と下書きの執筆用サーバー                                        |
+| `pnpm dev:verification`                | サンプル確認用サーバー                                                  |
+| `pnpm lint`                            | 推奨ルールで検査。警告も失敗扱い                                        |
+| `pnpm format`                          | Prettier で整形                                                         |
+| `pnpm format:check`                    | 整形を検査                                                              |
+| `pnpm check`                           | Astro / TypeScript の型チェック                                         |
+| `pnpm build`                           | 正式記事の公開対象だけを `dist/` に生成                                 |
+| `pnpm preview`                         | 本番用の `dist/` を確認                                                 |
+| `pnpm build:verification`              | サンプルだけを `dist-verification/` に生成                              |
+| `pnpm preview:verification`            | 検証用の `dist-verification/` を確認                                    |
+| `pnpm test`                            | 本番と検証の自動検査、Chromium・Firefox × 3サイズの画面テストを直列実行 |
+| `pnpm test:ui`                         | Playwright UI（先に `pnpm build:verification` を実行）                  |
+| `pnpm test:production-artifacts`       | 生成済み本番成果物の混入・欠落・不整合を読み取り専用で検査              |
+| `pnpm test:production-artifacts:cases` | 隔離した実ビルドと改変成果物で本番検査を独立検証                        |
 
 ### 本番用と検証用の分離
 
@@ -60,7 +62,11 @@ RSSの固定URLは `https://blog.devegoma.com/rss.xml` です。ローカルで�
 
 公開ページにはページに応じた説明文と自身を指すcanonicalを出力します。404と開発用下書きプレビューはnoindexとし、canonicalを出しません。`pnpm test:search-metadata` は隔離ビルドのHTMLと実際の開発サーバーの応答を、JavaScript無効のChromiumで検査します。先に `pnpm exec playwright install chromium` を実行してください。一時出力は `test-results/` に保存するため、同フォルダを初期化するブラウザテストと並行実行しないでください。`pnpm test`とCIにも含まれます。
 
-`pnpm build` 後の `pnpm test:search-artifacts` は、実際の `dist/` を検査します。HTML全件とサイトマップの集合、canonical・必須メタ情報・404、XMLの構造、robots.txt、同じ成果物を配信したローカルHTTP応答を確認します。別の出力先には `node scripts/check-search-artifacts.mjs <ディレクトリ>` を使用できます。本番ドメインへの通信は行いません。`pnpm test`は通常ビルドの直後にもこの検査を実行してから画面テストへ進みます。
+`pnpm build` 後の `pnpm test:production-artifacts` は、実際の `dist/` と同じ版の記事入力を照合します。正常時は終了コード0、下書き・サンプルの混入や公開対象との不整合、必須ファイル欠落時は0以外を返します。再ビルドや成果物の修正は行いません。別の出力先と入力には `node scripts/check-production-artifacts.mjs <成果物ディレクトリ> <入力ルート>` を使用します。入力ルートは `src/`・`public/`・`tests/fixtures/` を含むプロジェクトのルートです。検査後に入力や成果物を変更した場合は、対応する版で検査し直してください。
+
+本番検査は既存の `test:search-artifacts` も実行し、HTML全件とサイトマップの集合、canonical・必須メタ情報・404、XMLの構造、robots.txt、同じ成果物を配信したローカルHTTP応答を確認します。Chromiumが必要です。本番ドメインへの通信は行いません。既存検査だけを使う場合は `node scripts/check-search-artifacts.mjs <ディレクトリ>` を使用できます。`pnpm test` は本番ビルドの直後に本番検査を実行します。CIの公開処理への接続は後続Issueの対象です。
+
+`pnpm test:production-artifacts:cases` は、元の記事入力を変更せず、`test-results/` 内の隔離環境で正常・正式記事0件・意図的に壊した成果物を検証します。本文漏出を検出できる条件、画像の照合方法、worktreeごとの分担と検証結果は [Issue #67の仕様](docs/specs/issue-67-production-artifacts.md) に記録します。検索機能は追加しません。任意の短い本文断片を完全に検出する保証は置きません。
 
 `pnpm test:publication` は、一時記事を使って固定URL・公開データ検証・下書き除外・削除後の出力・開発プレビューを確認します。出力先は `test-results/` です。`pnpm test` では、この確認後に本番用と検証用の生成・検査を行い、検証用成果物で画面テストを実行します。同じ作業コピーで並行して実行しないでください。
 
