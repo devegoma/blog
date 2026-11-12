@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import test from "node:test";
@@ -51,14 +52,18 @@ async function put(root, path, value) {
     await mkdir(dirname(file), { recursive: true });
     await writeFile(file, value);
 }
-function inspect({ dist, input }) {
-    const result = spawnSync(
-        process.execPath,
-        [join(root, "scripts/check-production-artifacts.mjs"), dist, input],
-        { encoding: "utf8", timeout: 45000 },
-    );
-    assert.ifError(result.error);
-    return { code: result.status, log: result.stdout + result.stderr };
+async function inspect({ dist, input }) {
+    try {
+        const result = await promisify(execFile)(
+            process.execPath,
+            [join(root, "scripts/check-production-artifacts.mjs"), dist, input],
+            { encoding: "utf8", timeout: 45000 },
+        );
+        return { code: 0, log: result.stdout + result.stderr };
+    } catch (error) {
+        assert.equal(typeof error.code, "number", error.message);
+        return { code: error.code, log: error.stdout + error.stderr };
+    }
 }
 
 async function publishedFixture() {
@@ -103,7 +108,7 @@ async function publishedFixture() {
 
 test("公開記事本文の見出しが入力タイトルと異なれば拒否する", async () => {
     const item = await publishedFixture();
-    assert.equal(inspect(item).code, 0);
+    assert.equal((await inspect(item)).code, 0);
     const file = "posts/published/index.html";
     await put(
         item.dist,
@@ -113,7 +118,7 @@ test("公開記事本文の見出しが入力タイトルと異なれば拒否�
             '<h1 id="article-title">別の記事</h1>',
         ),
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /published.*h1/);
 });
@@ -129,7 +134,7 @@ test("公開記事のhead titleが別記事になっていたら拒否する", a
             "<title>別の記事</title>",
         ),
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /published.*title/);
 });
@@ -145,9 +150,24 @@ test("公開記事の説明文が入力の概要と異なれば拒否する", as
             'content="別の記事の概要です。"',
         ),
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /published.*description/);
+});
+
+test("RSS項目のGUIDが公開記事URLと異なれば拒否する", async () => {
+    const item = await publishedFixture();
+    await put(
+        item.dist,
+        "rss.xml",
+        (await readFile(join(item.dist, "rss.xml"), "utf8")).replace(
+            `<guid isPermaLink="true">${origin}/posts/published/</guid>`,
+            `<guid isPermaLink="true">${origin}/posts/other/</guid>`,
+        ),
+    );
+    const result = await inspect(item);
+    assert.notEqual(result.code, 0, result.log);
+    assert.match(result.log, /rss\.xml.*guid/);
 });
 
 test("公開記事の本文だけが消えた成果物を拒否する", async () => {
@@ -161,9 +181,32 @@ test("公開記事の本文だけが消えた成果物を拒否する", async ()
             "",
         ),
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /published.*body/);
+});
+
+test("MDX式を含む公開段落を静的な本文欠落と誤判定しない", async () => {
+    const item = await publishedFixture();
+    await put(
+        item.input,
+        "src/content/posts/published.mdx",
+        (await readFile(
+            join(item.input, "src/content/posts/published.mdx"),
+            "utf8",
+        )) + "\n\nHello {1 + 1} world\n",
+    );
+    const file = "posts/published/index.html";
+    await put(
+        item.dist,
+        file,
+        (await readFile(join(item.dist, file), "utf8")).replace(
+            "</div>",
+            "<p>Hello 2 world</p></div>",
+        ),
+    );
+    const result = await inspect(item);
+    assert.equal(result.code, 0, result.log);
 });
 
 test("HTMLの装飾と実体参照で表現された下書き固有段落を拒否する", async () => {
@@ -181,7 +224,7 @@ test("HTMLの装飾と実体参照で表現された下書き固有段落を拒�
             "<p>PRIVATE_ENTITY_<strong>MARKER_A</strong> &amp; PRIVATE_ENTITY_MARKER_Bの非公開文章。</p></body>",
         ),
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /index.html.*private/);
 });
@@ -203,7 +246,7 @@ test("JSONでUnicodeエスケープされた下書き固有段落を拒否する
                 `\\u${letter.charCodeAt(0).toString(16).padStart(4, "0")}`,
         ),
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /index.json.*private/);
 });
@@ -211,13 +254,44 @@ test("JSONでUnicodeエスケープされた下書き固有段落を拒否する
 test("正式記事0件でもRSS以外のXMLをRSSとして受け付けない", async () => {
     const item = await fixture();
     await put(item.dist, "rss.xml", "<arbitrary/>");
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /rss.xml/);
 });
 
+test("正式記事0件でもRSSの必須チャンネル情報の欠落を拒否する", async () => {
+    const item = await fixture();
+    await put(item.dist, "rss.xml", '<rss version="2.0"><channel/></rss>');
+    const result = await inspect(item);
+    assert.notEqual(result.code, 0, result.log);
+    assert.match(result.log, /rss\.xml.*channel/);
+});
+
+test("本番成果物から必須の共通画像が欠落したら拒否する", async () => {
+    const item = await fixture();
+    await put(item.input, "public/images/shared.png", "shared-image");
+    const result = await inspect(item);
+    assert.notEqual(result.code, 0, result.log);
+    assert.match(result.log, /images[\\/]shared.png/);
+});
+
+test("公開記事の画像要素と生成画像が同時に欠落しても拒否する", async () => {
+    const item = await publishedFixture();
+    const source = "src/content/posts/published.mdx";
+    await put(
+        item.input,
+        source,
+        (await readFile(join(item.input, source), "utf8")) +
+            "\n\n![本文画像](./cover.png)\n",
+    );
+    await put(item.input, "src/content/posts/cover.png", "image");
+    const result = await inspect(item);
+    assert.notEqual(result.code, 0, result.log);
+    assert.match(result.log, /cover\.png/);
+});
+
 test("正式記事0件の本番成果物を変更せず検査できる", async () => {
-    const result = inspect(await fixture());
+    const result = await inspect(await fixture());
     assert.equal(result.code, 0, result.log);
 });
 
@@ -229,7 +303,7 @@ test("その他のテキスト成果物に混入した下書き記事URLを拒�
         "---\ntitle: 同じ題名\n---\n\n執筆途中の記録です。",
     );
     await put(item.dist, "data.json", '{"href":"/posts/private/"}');
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /data.json.*private/);
 });
@@ -241,7 +315,7 @@ test("公開記事が本文と一覧とサイトマップから同時に欠落�
         "src/content/posts/published.mdx",
         '---\ntitle: 公開記事\ndate: "2026-09-01"\ndraft: false\n---\n\n公開する記録です。',
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /published/);
 });
@@ -251,9 +325,12 @@ test("正式記事0件のRSSに追加された項目を拒否する", async () =
     await put(
         item.dist,
         "rss.xml",
-        `<rss><channel><item><link>${origin}/posts/unexpected/</link></item></channel></rss>`,
+        (await readFile(join(item.dist, "rss.xml"), "utf8")).replace(
+            "</channel>",
+            `<item><link>${origin}/posts/unexpected/</link></item></channel>`,
+        ),
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /rss.xml/);
 });
@@ -270,7 +347,7 @@ test("下書き本文の固有段落が既存テキストに混入したら拒�
         "index.json",
         '{"body":"PRIVATE_ARTICLE_PARAGRAPH_ONLY_123456789。"}',
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /index.json.*private/);
 });
@@ -282,7 +359,7 @@ test("参照されていない記事専用画像の残存を拒否する", async
         "_astro/private.hash.webp",
         Buffer.from("private-image"),
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /private.hash.webp/);
 });
@@ -304,7 +381,7 @@ test("下書き専用画像は公開ページに参照が追加されても拒�
             '<img src="/_astro/photo.hash.webp" data-production-source="src/content/posts/private/photo.png"></body>',
         ),
     );
-    const result = inspect(item);
+    const result = await inspect(item);
     assert.notEqual(result.code, 0, result.log);
     assert.match(result.log, /private\/photo.png/);
 });

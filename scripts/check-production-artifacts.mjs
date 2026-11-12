@@ -85,7 +85,8 @@ try {
     const stack = [];
     let rssItem;
     let channels = 0;
-    parser.onopentag = ({ name }) => {
+    const channel = {};
+    parser.onopentag = ({ name, attributes }) => {
         if (!stack.length)
             assert.equal(name, "rss", "rss.xml: root must be rss");
         if (stack.length === 1) {
@@ -98,15 +99,30 @@ try {
                 "rss/channel",
                 "rss.xml: item outside channel",
             );
+        if (stack.join("/") === "rss/channel" && name !== "item") {
+            assert(
+                !Object.hasOwn(channel, name),
+                `rss.xml: duplicate channel ${name}`,
+            );
+            channel[name] = "";
+        }
         stack.push(name);
         if (name === "item") rssItems.push((rssItem = {}));
         else if (rssItem && stack.at(-2) === "item") {
             assert(!Object.hasOwn(rssItem, name), `rss.xml: duplicate ${name}`);
             rssItem[name] = "";
+            if (name === "guid")
+                assert.equal(
+                    attributes.isPermaLink,
+                    "true",
+                    "rss.xml: guid isPermaLink",
+                );
         }
     };
     parser.ontext = parser.oncdata = (value) => {
         if (rssItem && stack.at(-2) === "item") rssItem[stack.at(-1)] += value;
+        else if (stack.length === 3 && stack[1] === "channel")
+            channel[stack.at(-1)] += value;
     };
     parser.onclosetag = (name) => {
         if (name === "item") rssItem = undefined;
@@ -120,6 +136,13 @@ try {
         throw new Error(`rss.xml: ${error.message}`);
     }
     assert.equal(channels, 1, "rss.xml: exactly one channel is required");
+    for (const name of ["title", "description"])
+        assert(channel[name]?.trim(), `rss.xml: channel ${name} is required`);
+    assert.equal(
+        channel.link,
+        "https://blog.devegoma.com/",
+        "rss.xml: channel link",
+    );
     assert.equal(
         rssItems.length,
         Math.min(publicPosts.length, 20),
@@ -135,6 +158,7 @@ try {
             `https://blog.devegoma.com${post.href}`,
             `rss.xml: link ${post.href}`,
         );
+        assert.equal(item.guid, item.link, `rss.xml: guid ${post.href}`);
         assert.equal(
             item.title,
             post.title.trim(),
@@ -186,6 +210,9 @@ try {
             relative(join(root, "public"), file).replaceAll("\\", "/"),
         ),
     );
+    for (const path of common)
+        if (/\.(?:png|jpe?g|gif|webp|avif|svg|ico)$/i.test(path))
+            await readFile(join(directory, path));
     for (const file of output.filter((file) =>
         /\.(?:png|jpe?g|gif|webp|avif|svg|ico)$/i.test(file),
     )) {
@@ -198,7 +225,9 @@ try {
             );
     }
     const allowedSources = new Set();
+    const requiredSources = new Set();
     for (const post of publicPosts) {
+        const required = imageReferences(post, false);
         for (const image of imageReferences(post)) {
             const source = relative(
                 root,
@@ -210,9 +239,11 @@ try {
             );
             await readFile(join(root, source));
             allowedSources.add(source);
+            if (required.includes(image)) requiredSources.add(source);
         }
     }
     const referencedImages = new Set();
+    const referencedSources = new Set();
     const browser = await chromium.launch();
     try {
         const page = await browser.newPage({ javaScriptEnabled: false });
@@ -345,6 +376,7 @@ try {
                             `${path}: image ${imagePath} has unpublished or missing source ${image.source}`,
                         );
                         referencedImages.add(imagePath);
+                        referencedSources.add(image.source);
                     }
                 }
             }
@@ -352,6 +384,11 @@ try {
     } finally {
         await browser.close();
     }
+    for (const source of requiredSources)
+        assert(
+            referencedSources.has(source),
+            `${source}: public article image missing from output`,
+        );
     for (const file of output.filter((file) =>
         /\.(?:png|jpe?g|gif|webp|avif|svg|ico)$/i.test(file),
     )) {
@@ -409,20 +446,23 @@ function normalize(value) {
 }
 function textChunks(body) {
     const chunks = [];
+    const containsExpression = (node) =>
+        ["mdxTextExpression", "mdxFlowExpression"].includes(node.type) ||
+        (node.children ?? []).some(containsExpression);
     const text = (node) =>
         ["text", "inlineCode", "code"].includes(node.type)
             ? node.value
             : (node.children ?? []).map(text).join("");
     const visit = (node) => {
-        if (["paragraph", "heading", "code"].includes(node.type))
-            chunks.push(normalize(text(node)));
-        else for (const child of node.children ?? []) visit(child);
+        if (["paragraph", "heading", "code"].includes(node.type)) {
+            if (!containsExpression(node)) chunks.push(normalize(text(node)));
+        } else for (const child of node.children ?? []) visit(child);
     };
     visit(mdxToMdast(body));
     return chunks.filter(Boolean);
 }
 
-function imageReferences(post) {
+function imageReferences(post, includeImports = true) {
     const images = [];
     if (typeof post.image === "string") images.push(post.image);
     const tree = mdxToMdast(post.body);
@@ -437,7 +477,7 @@ function imageReferences(post) {
         if (node.type === "image") images.push(decodeURI(node.url));
         if (node.type === "imageReference" && definitions.has(node.identifier))
             images.push(decodeURI(definitions.get(node.identifier)));
-        if (node.type === "mdxjsEsm")
+        if (includeImports && node.type === "mdxjsEsm")
             for (const match of node.value.matchAll(
                 /\bfrom\s*["']([^"']+\.(?:png|jpe?g|gif|webp|avif|svg))["']/gi,
             ))
