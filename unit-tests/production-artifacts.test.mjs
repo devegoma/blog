@@ -106,6 +106,34 @@ async function publishedFixture() {
     return item;
 }
 
+test("前後に空白があるタイトルを概要に使う正常な成果物を検査できる", async () => {
+    const item = await publishedFixture();
+    await put(
+        item.input,
+        "src/content/posts/published.mdx",
+        '---\ntitle: "  公開記事  "\ndate: "2026-09-01"\ndraft: false\n---\n\n```js\nconst answer = 42;\n```\n',
+    );
+    for (const file of [
+        "index.html",
+        "archives/2026-09/index.html",
+        "posts/published/index.html",
+        "rss.xml",
+    ]) {
+        await put(
+            item.dist,
+            file,
+            (await readFile(join(item.dist, file), "utf8"))
+                .replaceAll("公開する概要です。", "公開記事")
+                .replace(
+                    "<p>公開する記録です。</p>",
+                    "<pre><code>const answer = 42;</code></pre>",
+                ),
+        );
+    }
+    const result = await inspect(item);
+    assert.equal(result.code, 0, result.log);
+});
+
 test("公開記事本文の見出しが入力タイトルと異なれば拒否する", async () => {
     const item = await publishedFixture();
     assert.equal((await inspect(item)).code, 0);

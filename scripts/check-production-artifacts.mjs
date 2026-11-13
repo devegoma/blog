@@ -29,6 +29,7 @@ try {
                 .slice(0, -4);
             posts.push({
                 ...frontmatter,
+                title: frontmatter.title.trim(),
                 file,
                 id,
                 body: content,
