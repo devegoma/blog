@@ -20,6 +20,18 @@ export default defineConfig({
         ? fileURLToPath(verificationPublic)
         : "./public",
     trailingSlash: "always",
+    ...(!target.verification
+        ? {
+              image: {
+                  service: {
+                      entrypoint: "./src/config/production-image-service.mjs",
+                      config: {
+                          root: fileURLToPath(new URL("./", import.meta.url)),
+                      },
+                  },
+              },
+          }
+        : {}),
     integrations: [
         mdx(),
         ...(target.verification
