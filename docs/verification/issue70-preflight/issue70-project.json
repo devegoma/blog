@@ -1,0 +1,25 @@
+{
+    "checkedAt": "2026-11-16T02:43:55.291Z",
+    "repository": "devegoma/blog",
+    "workflowCommit": "7a1a9471b3fa233f6442a974a4a67658e425cca1",
+    "runId": "43793898523",
+    "runAttempt": "1",
+    "project": "blog",
+    "productionBranch": "main",
+    "subdomain": "blog-5w4.pages.dev",
+    "source": {
+        "type": "github",
+        "repository": "devegoma/blog"
+    },
+    "pagesGitProductionAutoDeployDisabled": true,
+    "pagesGitPreviewAutoDeployDisabled": true,
+    "registeredSecretsAuthorizedForProject": true,
+    "canonicalDeployment": {
+        "id": "bf70446f-bd80-4ce7-8216-1ad704a8418b",
+        "environment": "production",
+        "commit": "c5d2e87651fd6ef8fc7dcfbd76844893369b6260",
+        "branch": "develop",
+        "status": "success",
+        "url": "https://bf70446f.blog-5w4.pages.dev"
+    }
+}

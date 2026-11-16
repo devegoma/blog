@@ -1,0 +1,44 @@
+---
+import type { HTMLAttributes } from "astro/types";
+interface Props extends HTMLAttributes<"pre"> {
+    "data-language"?: string;
+}
+const attributes = { ...Astro.props, tabindex: 0 };
+---
+
+<div class="code-block">
+    <div class="code-toolbar">
+        <span>{attributes["data-language"] ?? "CODE"}</span>
+        <span class="copy-status" role="status"></span>
+        <button type="button" data-copy-code hidden>
+            コピー
+        </button>
+    </div>
+    <pre {...attributes} aria-label="コード（横スクロール可能）"><slot /></pre>
+</div>
+
+<script>
+    for (const button of document.querySelectorAll<HTMLButtonElement>(
+        "[data-copy-code]",
+    )) {
+        button.hidden = false;
+        let dismissTimer: number | undefined;
+        button.addEventListener("click", async () => {
+            const block = button.closest(".code-block")!;
+            const status = block.querySelector<HTMLElement>(".copy-status")!;
+            try {
+                await navigator.clipboard.writeText(
+                    block.querySelector("code")!.textContent ?? "",
+                );
+                status.textContent = "コピーしました";
+            } catch {
+                status.textContent =
+                    "コピーできませんでした。コードを選択してコピーしてください。";
+            }
+            window.clearTimeout(dismissTimer);
+            dismissTimer = window.setTimeout(() => {
+                status.textContent = "";
+            }, 3000);
+        });
+    }
+</script>

@@ -1,0 +1,95 @@
+name: CI
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    checks:
+        name: Checks
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        outputs:
+            production-artifact-id: ${{ steps.production-artifact.outputs.artifact-id }}
+        steps:
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+              with:
+                  version: 12.16.1
+            - uses: actions/setup-node@v7
+              with:
+                  node-version-file: .nvmrc
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm lint
+            - run: pnpm format:check
+            - run: pnpm check
+            - run: pnpm exec playwright install --with-deps chromium firefox
+            - run: pnpm test
+            - name: Inspect final production artifact
+              run: pnpm test:production-artifacts
+            - name: Package verified production artifact
+              run: node scripts/ci-artifact.mjs pack dist release
+            - name: Store verified production artifact
+              id: production-artifact
+              uses: actions/upload-artifact@v7
+              with:
+                  name: production-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+                  path: release/
+                  include-hidden-files: true
+                  retention-days: 7
+                  if-no-files-found: error
+            - uses: actions/upload-artifact@v7
+              if: failure()
+              with:
+                  name: playwright-failure
+                  path: test-results/
+                  retention-days: 7
+                  if-no-files-found: ignore
+
+    deploy:
+        name: Deploy production
+        needs: checks
+        concurrency:
+            group: pages-blog-production
+            cancel-in-progress: false
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.checks.result == 'success' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+              with:
+                  version: 12.16.1
+            - uses: actions/setup-node@v7
+              with:
+                  node-version-file: .nvmrc
+            - name: Download verified production artifact
+              uses: actions/download-artifact@v8
+              with:
+                  artifact-ids: ${{ needs.checks.outputs.production-artifact-id }}
+                  path: release/
+                  merge-multiple: true
+            - name: Verify downloaded production artifact
+              run: node scripts/ci-artifact.mjs verify release
+            - name: Prepare pinned Wrangler
+              env:
+                  WRANGLER_SEND_METRICS: "false"
+              run: pnpm dlx wrangler@4.135.0 --version
+            - name: Check latest main before publication
+              id: latest-main
+              run: node scripts/check-latest-main.mjs
+            - name: Publish verified production artifact
+              if: ${{ steps.latest-main.outputs.publish == 'true' }}
+              working-directory: release
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  WRANGLER_SEND_METRICS: "false"
+              run: pnpm dlx wrangler@4.135.0 pages deploy dist --project-name blog --branch main --commit-hash "$GITHUB_SHA" --commit-dirty=false --no-bundle

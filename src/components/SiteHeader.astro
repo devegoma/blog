@@ -1,0 +1,77 @@
+---
+interface Props {
+    active?: "articles" | "tags" | "about" | "none";
+}
+const { active = "articles" } = Astro.props;
+---
+
+<header class="site-header">
+    <div class="home-shell">
+        <div class="masthead">
+            <a class="wordmark" href="/" aria-label="devegoma’s blog ホーム">
+                devegoma<span>’</span>s blog
+            </a>
+            <div class="header-actions">
+                <button
+                    class="theme-toggle icon-link"
+                    type="button"
+                    data-theme-toggle
+                    aria-label="ダークモードに切り替える"
+                    hidden
+                >
+                    <svg
+                        class="moon-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        />
+                    </svg>
+                    <svg
+                        class="sun-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="4"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        />
+                        <path
+                            d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <nav class="main-nav" aria-label="メイン">
+            <a
+                href="/"
+                aria-current={active === "articles" ? "page" : undefined}
+            >
+                記事
+            </a>
+            <a
+                href="/tags/"
+                aria-current={active === "tags" ? "page" : undefined}
+            >
+                タグ
+            </a>
+            <a
+                href="/about/"
+                aria-current={active === "about" ? "page" : undefined}
+            >
+                このブログについて
+            </a>
+        </nav>
+    </div>
+</header>

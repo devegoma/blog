@@ -1,0 +1,155 @@
+name: Issue 70 isolated Actions acceptance
+
+on:
+    push:
+        branches: [codex/issue-70-acceptance]
+
+permissions:
+    contents: read
+    actions: read
+
+jobs:
+    policy:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v7
+            - uses: pnpm/action-setup@v6
+              with:
+                  version: 12.16.1
+            - uses: actions/setup-node@v7
+              with:
+                  node-version-file: .nvmrc
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm test:ci
+            - run: node scripts/actions-acceptance.mjs policy
+
+    holder:
+        name: Acceptance holder (${{ matrix.scenario }})
+        needs: policy
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        strategy:
+            fail-fast: false
+            matrix:
+                scenario: [serialize, stale, unavailable]
+        concurrency:
+            group: issue-70-${{ github.run_id }}-${{ matrix.scenario }}
+            cancel-in-progress: false
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version-file: .nvmrc
+            - run: node scripts/actions-acceptance.mjs init holder ${{ matrix.scenario }}
+            - id: latest-main
+              run: node scripts/actions-acceptance.mjs guard holder ${{ matrix.scenario }}
+            - name: Record isolated publication start
+              if: ${{ steps.latest-main.outputs.publish == 'true' }}
+              run: node scripts/actions-acceptance.mjs publish-start holder ${{ matrix.scenario }}
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: acceptance-started-${{ matrix.scenario }}
+                  path: test-results/actions-acceptance/holder-${{ matrix.scenario }}/proof.json
+                  retention-days: 7
+            - run: node scripts/actions-acceptance.mjs wait-candidate ${{ matrix.scenario }}
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+            - run: node scripts/actions-acceptance.mjs update-main ${{ matrix.scenario }}
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: acceptance-main-${{ matrix.scenario }}
+                  path: test-results/actions-main/${{ matrix.scenario }}/
+                  retention-days: 7
+            - run: node scripts/actions-acceptance.mjs publish-end holder ${{ matrix.scenario }}
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: acceptance-holder-${{ matrix.scenario }}
+                  path: test-results/actions-acceptance/holder-${{ matrix.scenario }}/proof.json
+                  retention-days: 7
+
+    observer:
+        name: Observe holder (${{ matrix.scenario }})
+        needs: policy
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        strategy:
+            fail-fast: false
+            matrix:
+                scenario: [serialize, stale, unavailable]
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version-file: .nvmrc
+            - run: node scripts/actions-acceptance.mjs wait-started ${{ matrix.scenario }}
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+
+    candidate:
+        name: Acceptance candidate (${{ matrix.scenario }})
+        needs: [policy, observer]
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        strategy:
+            fail-fast: false
+            matrix:
+                scenario: [serialize, stale, unavailable]
+        concurrency:
+            group: issue-70-${{ github.run_id }}-${{ matrix.scenario }}
+            cancel-in-progress: false
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version-file: .nvmrc
+            - uses: actions/download-artifact@v8
+              with:
+                  name: acceptance-main-${{ matrix.scenario }}
+                  path: test-results/actions-main/${{ matrix.scenario }}/
+            - run: node scripts/actions-acceptance.mjs init candidate ${{ matrix.scenario }}
+            - id: latest-main
+              run: node scripts/actions-acceptance.mjs guard candidate ${{ matrix.scenario }}
+            - name: Record isolated candidate publication
+              if: ${{ steps.latest-main.outputs.publish == 'true' }}
+              run: node scripts/actions-acceptance.mjs publish-once candidate ${{ matrix.scenario }}
+            - name: Check old target again
+              id: old-main
+              if: ${{ matrix.scenario == 'stale' }}
+              run: node scripts/actions-acceptance.mjs old-target candidate ${{ matrix.scenario }}
+            - name: Old target publication must be skipped
+              if: ${{ steps.old-main.outputs.publish == 'true' }}
+              run: node -e 'throw new Error("Old target publication was called")'
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: acceptance-candidate-${{ matrix.scenario }}
+                  path: test-results/actions-acceptance/candidate-${{ matrix.scenario }}/proof.json
+                  retention-days: 7
+
+    report:
+        if: always()
+        needs: [policy, holder, observer, candidate]
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version-file: .nvmrc
+            - uses: actions/download-artifact@v8
+              with:
+                  pattern: acceptance-holder-*
+                  path: test-results/actions-proof/
+            - uses: actions/download-artifact@v8
+              with:
+                  pattern: acceptance-candidate-*
+                  path: test-results/actions-proof/
+            - run: node scripts/actions-acceptance.mjs report
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: issue-70-actions-report
+                  path: test-results/actions-report/
+                  retention-days: 7

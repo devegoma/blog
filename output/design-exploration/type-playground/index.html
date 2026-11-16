@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#2047ef" />
+        <title>文字の実験室 — devegoma’s blog</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="tokens.css" />
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            html {
+                scroll-behavior: smooth;
+            }
+            body {
+                margin: 0;
+                background: var(--color-bg);
+                color: var(--color-text);
+                font: 16px/1.7 var(--font-body);
+            }
+            a {
+                color: inherit;
+            }
+            button,
+            input {
+                font: inherit;
+            }
+            button {
+                color: inherit;
+                cursor: pointer;
+            }
+            .wrap {
+                padding-inline: 4vw;
+            }
+            .mono {
+                font: 12px/1.5 var(--font-mono);
+                letter-spacing: 0.03em;
+            }
+            .site-header {
+                min-height: 70px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 24px;
+                border-bottom: 1px solid var(--color-line);
+            }
+            .site-header img {
+                display: block;
+                width: 195px;
+                height: auto;
+            }
+            .site-header nav {
+                display: flex;
+                gap: clamp(14px, 3vw, 42px);
+            }
+            .site-header nav a {
+                font-size: 14px;
+                text-decoration: none;
+            }
+            .type-hero {
+                text-align: center;
+                padding: 45px 4vw 0;
+            }
+            .type-hero.is-inverted {
+                background: var(--color-inverse-bg);
+                color: var(--color-inverse-text);
+            }
+            .type-hero h1 {
+                min-height: 1.2em;
+                margin: 0;
+                font: 700 clamp(72px, 20vw, 310px)/1.2 var(--font-body);
+                letter-spacing: -0.05em;
+                overflow-wrap: anywhere;
+            }
+            .tagline {
+                font-size: 22px;
+                margin: 5px 0 60px;
+            }
+            .type-tools {
+                display: flex;
+                text-align: left;
+                border-top: 1px solid var(--color-line);
+                border-bottom: 1px solid var(--color-line);
+                padding: 25px 0;
+                gap: 30px;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .type-tools label {
+                font: 12px var(--font-mono);
+                display: block;
+                flex: 1;
+            }
+            .type-tools input {
+                display: block;
+                width: 100%;
+                margin-top: 16px;
+                accent-color: var(--color-accent);
+            }
+            .type-tools input[type="text"] {
+                color: inherit;
+                background: none;
+                border: 0;
+                border-bottom: 1px solid currentColor;
+                font: 20px var(--font-body);
+                padding: 5px;
+            }
+            .type-tools input[type="range"] {
+                min-height: 28px;
+            }
+            .type-tools button {
+                background: transparent;
+                border: 1px solid var(--color-line);
+                min-height: 48px;
+                padding: 10px 18px;
+            }
+            .type-tools button[aria-pressed="true"] {
+                background: var(--color-accent);
+                color: var(--color-inverse-text);
+                border-color: var(--color-accent);
+            }
+            .field-note {
+                margin: 20px 0 0;
+                font-size: 14px;
+            }
+            .family {
+                padding: 80px 5vw;
+                background: #fff;
+                color: #2047ef;
+            }
+            .section-head {
+                display: flex;
+                justify-content: space-between;
+                gap: 24px;
+                align-items: end;
+                margin-bottom: 28px;
+            }
+            .section-head h2 {
+                font-size: clamp(40px, 7vw, 92px);
+                line-height: 1;
+                letter-spacing: -0.055em;
+                margin: 10px 0 0;
+            }
+            .section-head p {
+                max-width: 360px;
+                margin: 0;
+            }
+            .family article {
+                padding: 25px 0;
+                border-top: 1px solid #c7d1fc;
+                display: grid;
+                grid-template-columns: 1fr 3fr;
+                align-items: center;
+                gap: 12px;
+            }
+            .family article span {
+                font: 12px var(--font-mono);
+            }
+            .family strong {
+                font: var(--sample-weight, 400) clamp(32px, 6vw, 90px)/1.15
+                    var(--font-body);
+                letter-spacing: -0.05em;
+                overflow-wrap: anywhere;
+            }
+            .family article p {
+                grid-column: 2;
+                margin: 0;
+                font-size: 14px;
+            }
+            .reading {
+                padding: 80px 5vw;
+            }
+            .reading h2 {
+                font-size: clamp(40px, 7vw, 92px);
+                line-height: 1;
+                letter-spacing: -0.05em;
+                margin: 8px 0 30px;
+            }
+            .reading-list {
+                border-top: 1px solid var(--color-line);
+            }
+            .reading-item {
+                display: grid;
+                grid-template-columns: 180px 1fr 40px;
+                gap: 20px;
+                align-items: baseline;
+                padding: 22px 0;
+                border-bottom: 1px solid var(--color-line);
+            }
+            .reading-item h3 {
+                font-size: clamp(21px, 3vw, 34px);
+                font-weight: 500;
+                line-height: 1.4;
+                margin: 0;
+            }
+            .reading-item p {
+                margin: 4px 0 0;
+                font-size: 15px;
+            }
+            .reading-item b {
+                color: var(--color-accent);
+                font: 30px var(--font-body);
+            }
+            .inverted {
+                --color-bg: #ffea64;
+                --color-text: #162dab;
+                --color-accent: #162dab;
+                --color-line: #a6a051;
+                background: var(--color-bg);
+                color: var(--color-text);
+            }
+            .inverted .family {
+                background: #162dab;
+                color: #ffea64;
+            }
+            .faq {
+                padding: 76px 5vw;
+            }
+            .faq h2 {
+                font-size: clamp(38px, 6vw, 72px);
+                margin: 8px 0 28px;
+            }
+            details {
+                border-top: 1px solid var(--color-line);
+                padding: 12px 0;
+            }
+            details:last-child {
+                border-bottom: 1px solid var(--color-line);
+            }
+            summary {
+                cursor: pointer;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                font-size: 18px;
+                font-weight: 600;
+            }
+            details p {
+                max-width: 760px;
+                margin: 8px 0 16px;
+            }
+            .contact {
+                padding: 68px 5vw 30px;
+            }
+            .contact-inner {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 28px;
+                align-items: end;
+            }
+            .contact h2 {
+                font-size: clamp(44px, 8vw, 110px);
+                line-height: 1;
+                letter-spacing: -0.055em;
+                margin: 10px 0;
+            }
+            .contact p {
+                max-width: 500px;
+            }
+            .contact a {
+                display: inline-flex;
+                align-items: center;
+                min-height: 48px;
+                border: 1px solid currentColor;
+                padding: 10px 18px;
+                text-decoration: none;
+            }
+            footer {
+                border-top: 1px solid var(--color-line);
+                padding: 18px 0;
+                margin-top: 55px;
+                display: flex;
+                justify-content: space-between;
+                gap: 18px;
+            }
+            @media (max-width: 700px) {
+                .wrap {
+                    padding-inline: 6vw;
+                }
+                .site-header {
+                    min-height: 62px;
+                }
+                .site-header img {
+                    width: 158px;
+                }
+                .site-header nav {
+                    gap: 12px;
+                }
+                .site-header nav a {
+                    font-size: 12px;
+                }
+                header > .mono {
+                    display: none;
+                }
+                .type-hero {
+                    padding-top: 32px;
+                }
+                .type-hero h1 {
+                    font-size: clamp(72px, 20vw, 150px);
+                }
+                .tagline {
+                    font-size: 18px;
+                    margin-bottom: 36px;
+                }
+                .type-tools {
+                    flex-wrap: wrap;
+                    gap: 25px;
+                }
+                .type-tools label {
+                    flex: 1 1 40%;
+                }
+                .type-tools button {
+                    width: 100%;
+                }
+                .family {
+                    padding: 56px 6vw;
+                }
+                .family article {
+                    grid-template-columns: 1fr;
+                }
+                .family article p {
+                    grid-column: 1;
+                }
+                .reading,
+                .faq,
+                .contact {
+                    padding: 56px 6vw;
+                }
+                .reading-item {
+                    grid-template-columns: 1fr 32px;
+                    gap: 4px 12px;
+                }
+                .reading-item .mono {
+                    grid-column: 1 / -1;
+                }
+                .reading-item h3 {
+                    font-size: 22px;
+                }
+                .reading-item b {
+                    grid-column: 2;
+                    grid-row: 2;
+                }
+                .section-head,
+                .contact-inner {
+                    display: block;
+                }
+                .section-head p {
+                    margin-top: 16px;
+                }
+                .contact-inner > div + div {
+                    margin-top: 22px;
+                }
+                footer {
+                    flex-direction: column;
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                html {
+                    scroll-behavior: auto;
+                }
+                *,
+                *::before,
+                *::after {
+                    animation-duration: 0.01ms !important;
+                    transition-duration: 0.01ms !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <header class="site-header">
+                <a href="#top" aria-label="devegoma’s blog ホーム"
+                    ><img src="assets/logo.webp" alt="devegoma’s blog"
+                /></a>
+                <nav aria-label="メインナビゲーション">
+                    <a href="#tester">文字を試す</a
+                    ><a href="#weights">太さを比べる</a
+                    ><a href="#about">ブログについて</a>
+                </nav>
+            </header>
+        </div>
+        <main id="top">
+            <section class="type-hero" aria-labelledby="hero-title">
+                <p class="mono">TYPE YOUR NEXT NOTE / BLOG TITLE PLAYGROUND</p>
+                <h1 id="hero-title" aria-live="polite">学びの記録</h1>
+                <p class="tagline">
+                    記事の見出しを入力して、文字の表情を試してみる。
+                </p>
+                <div class="type-tools wrap" id="tester">
+                    <label
+                        >見出しのことば<input
+                            id="text-control"
+                            type="text"
+                            value="学びの記録"
+                            maxlength="32"
+                            aria-label="見出しのことば"
+                    /></label>
+                    <label
+                        >ウェイト <output id="weight-output">700</output
+                        ><input
+                            id="weight-control"
+                            type="range"
+                            min="400"
+                            max="900"
+                            step="100"
+                            value="700"
+                            aria-label="文字の太さ"
+                    /></label>
+                    <label
+                        >字間 <output id="spacing-output">-0.05em</output
+                        ><input
+                            id="spacing-control"
+                            type="range"
+                            min="-10"
+                            max="10"
+                            value="-5"
+                            aria-label="文字の字間"
+                    /></label>
+                    <button
+                        type="button"
+                        id="invert-control"
+                        aria-pressed="false"
+                    >
+                        背景を反転
+                    </button>
+                </div>
+                <p class="field-note">
+                    書き始める前に、見出しの読みやすさを確かめる小さな実験室です。
+                </p>
+            </section>
+            <section class="family" id="weights" aria-labelledby="weight-title">
+                <div class="section-head">
+                    <div>
+                        <span class="mono">01 / WEIGHT STUDY</span>
+                        <h2 id="weight-title">
+                            同じことば、<br />ちがう手ざわり。
+                        </h2>
+                    </div>
+                    <p>
+                        太さが変わると、記事の入り口の印象も変わります。本文と見出し、それぞれに合う強さを見比べてください。
+                    </p>
+                </div>
+                <article>
+                    <span>400 / REGULAR</span
+                    ><strong style="--sample-weight: 400"
+                        >気づきを書き留める</strong
+                    >
+                    <p>本文に近い軽やかな読み心地。</p>
+                </article>
+                <article>
+                    <span>500 / MEDIUM</span
+                    ><strong style="--sample-weight: 500"
+                        >気づきを書き留める</strong
+                    >
+                    <p>長めの見出しにもなじむ中間の強さ。</p>
+                </article>
+                <article>
+                    <span>700 / BOLD</span
+                    ><strong style="--sample-weight: 700"
+                        >気づきを書き留める</strong
+                    >
+                    <p>記事一覧で要点を見つけやすく。</p>
+                </article>
+                <article>
+                    <span>900 / BLACK</span
+                    ><strong style="--sample-weight: 900"
+                        >気づきを書き留める</strong
+                    >
+                    <p>ページの主題をはっきり伝える。</p>
+                </article>
+            </section>
+            <section class="reading" id="about" aria-labelledby="reading-title">
+                <span class="mono">02 / NOTES FROM LEARNING</span>
+                <div class="section-head">
+                    <h2 id="reading-title">学びを、<br />あとからひらく。</h2>
+                    <p>
+                        読んだ記事や本、使ってみたツールの記録。見出しの先には、日々の学習で気づいたことを書いています。
+                    </p>
+                </div>
+                <div class="reading-list">
+                    <article class="reading-item">
+                        <span class="mono">READ / BOOK</span>
+                        <div>
+                            <h3>読んだ本から、明日につながる気づきを。</h3>
+                            <p>心に残った考えを、自分のことばで記録します。</p>
+                        </div>
+                        <b aria-hidden="true">↗</b>
+                    </article>
+                    <article class="reading-item">
+                        <span class="mono">READ / ARTICLE</span>
+                        <div>
+                            <h3>記事を読んで考えたこと。</h3>
+                            <p>
+                                気になった話題を調べ、学んだことをまとめます。
+                            </p>
+                        </div>
+                        <b aria-hidden="true">↗</b>
+                    </article>
+                    <article class="reading-item">
+                        <span class="mono">TRY / TOOL</span>
+                        <div>
+                            <h3>道具を使ってわかったこと。</h3>
+                            <p>
+                                試した手順や使い心地を、あとで参照できるように。
+                            </p>
+                        </div>
+                        <b aria-hidden="true">↗</b>
+                    </article>
+                </div>
+            </section>
+            <section class="inverted">
+                <div class="family">
+                    <div class="section-head">
+                        <div>
+                            <span class="mono"
+                                >03 / FIND YOUR READING MODE</span
+                            >
+                            <h2>読みたい記録へ。</h2>
+                        </div>
+                        <p>
+                            本、記事、ツール。関心に合わせてタグから記録をたどれます。
+                        </p>
+                    </div>
+                    <article>
+                        <span>BOOKS</span
+                        ><strong style="--sample-weight: 700"
+                            >読んだ本のメモ</strong
+                        >
+                        <p>心に残った一節や、考えたことを読む。</p>
+                    </article>
+                    <article>
+                        <span>ARTICLES</span
+                        ><strong style="--sample-weight: 700"
+                            >記事からの発見</strong
+                        >
+                        <p>新しく知った視点や情報をたどる。</p>
+                    </article>
+                    <article>
+                        <span>TOOLS</span
+                        ><strong style="--sample-weight: 700"
+                            >使ってみた記録</strong
+                        >
+                        <p>試した道具や工夫のメモを読む。</p>
+                    </article>
+                </div>
+            </section>
+            <section class="faq">
+                <span class="mono">04 / ABOUT THIS BLOG</span>
+                <h2>このブログについて</h2>
+                <details>
+                    <summary>どんな内容を記録していますか？</summary>
+                    <p>
+                        読んだ記事や本から得た学び、ツールなどを使ってみた記録をまとめています。
+                    </p>
+                </details>
+                <details>
+                    <summary>記事はどうやって探せますか？</summary>
+                    <p>
+                        記事一覧のほか、本やツール、言語などのタグを手がかりに探せます。
+                    </p>
+                </details>
+                <details>
+                    <summary>新しい記事の更新を受け取れますか？</summary>
+                    <p>RSS フィードで新しい記事を購読できます。</p>
+                </details>
+            </section>
+            <section class="contact">
+                <div class="contact-inner">
+                    <div>
+                        <span class="mono">05 / KEEP IN TOUCH</span>
+                        <h2>次の気づきも、<br />ここに。</h2>
+                    </div>
+                    <div>
+                        <p>
+                            読んだこと、試したことを少しずつ記録しています。ブログや執筆者についてはプロフィールをご覧ください。
+                        </p>
+                        <a href="#about">ブログについて読む　→</a>
+                    </div>
+                </div>
+                <footer class="mono">
+                    <span>devegoma’s blog · LEARNING NOTES</span
+                    ><span>学びを記録して、あとから読み返す。</span>
+                </footer>
+            </section>
+        </main>
+        <script>
+            const hero = document.querySelector("#hero-title");
+            const textControl = document.querySelector("#text-control");
+            const weightControl = document.querySelector("#weight-control");
+            const spacingControl = document.querySelector("#spacing-control");
+            const weightOutput = document.querySelector("#weight-output");
+            const spacingOutput = document.querySelector("#spacing-output");
+            const heroSection = document.querySelector(".type-hero");
+            textControl.addEventListener("input", () => {
+                hero.textContent = textControl.value || "学びの記録";
+            });
+            weightControl.addEventListener("input", () => {
+                hero.style.fontWeight = weightControl.value;
+                weightOutput.value = weightControl.value;
+                weightOutput.textContent = weightControl.value;
+            });
+            spacingControl.addEventListener("input", () => {
+                const value = (Number(spacingControl.value) / 100).toFixed(2);
+                hero.style.letterSpacing = `${value}em`;
+                spacingOutput.value = `${value}em`;
+                spacingOutput.textContent = `${value}em`;
+            });
+            document
+                .querySelector("#invert-control")
+                .addEventListener("click", (event) => {
+                    const active =
+                        event.currentTarget.getAttribute("aria-pressed") !==
+                        "true";
+                    event.currentTarget.setAttribute(
+                        "aria-pressed",
+                        String(active),
+                    );
+                    heroSection.classList.toggle("is-inverted", active);
+                });
+        </script>
+    </body>
+</html>

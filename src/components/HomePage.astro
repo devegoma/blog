@@ -1,0 +1,199 @@
+---
+import HomeLayout from "../layouts/HomeLayout.astro";
+
+import SiteHeader from "./SiteHeader.astro";
+import Profile from "./Profile.astro";
+import ArticleList from "./ArticleList.astro";
+import { tagLabel } from "../data/tags";
+import { getPosts, tagHref } from "../data/posts";
+
+interface Props {
+    month?: string;
+    tag?: string;
+    page?: number;
+}
+const { month, tag, page = 1 } = Astro.props;
+const posts = await getPosts();
+const sortedPosts = posts;
+const tags = [...new Set(posts.flatMap((post) => post.tags))].sort();
+const months = [
+    ...new Set(
+        sortedPosts
+            .filter((post) => post.date)
+            .map((post) => post.date.slice(0, 7)),
+    ),
+];
+const monthLabel = (value: string) => {
+    const [year, month] = value.split("-");
+    return `${year}年${Number(month)}月`;
+};
+const heading = tag
+    ? `${tagLabel(tag)}の記事`
+    : month
+      ? `${monthLabel(month)}の記録`
+      : "最近の記録";
+const visiblePosts = tag
+    ? sortedPosts.filter((post) => post.tags.includes(tag))
+    : month
+      ? sortedPosts.filter((post) => post.date.startsWith(`${month}-`))
+      : sortedPosts.slice((page - 1) * 10, page * 10);
+const pageCount = Math.ceil(posts.length / 10);
+const pageHref = (value: number) => (value === 1 ? "/" : `/page/${value}/`);
+---
+
+<HomeLayout
+    title={
+        month || tag ? heading : page > 1 ? `記事 - ${page}ページ目` : "記事"
+    }
+    description={
+        month
+            ? `${monthLabel(month)}に公開した記事の一覧です。`
+            : page > 1
+              ? `公開記事の一覧です（${page}ページ目）。`
+              : undefined
+    }
+>
+    <SiteHeader active={tag ? "tags" : "articles"} />
+    <div class="home-shell">
+        <div class="home-grid">
+            <div class="list-heading">
+                <h1 id="recent-posts-heading">{heading}</h1>
+                {(month || tag) && (
+                    <button
+                        type="button"
+                        class="post-sort"
+                        value="desc"
+                        aria-controls="article-list"
+                        disabled
+                    >
+                        ↓ 新しい順
+                    </button>
+                )}
+            </div>
+            <div class="sidebar">
+                <Profile />
+            </div>
+            <main
+                class="articles-column"
+                id="articles"
+                aria-labelledby="recent-posts-heading"
+            >
+                <ArticleList posts={visiblePosts} />
+                {!month && !tag && (
+                    <>
+                        <p class="home-range">
+                            {posts.length === 0
+                                ? "公開記事はまだありません。"
+                                : `${posts.length}件中 ${(page - 1) * 10 + 1}–${Math.min(page * 10, posts.length)}件を表示`}
+                        </p>
+                        {pageCount > 1 && (
+                            <nav
+                                class="home-pagination"
+                                aria-label="ページ送り"
+                            >
+                                {page > 1 ? (
+                                    <a href={pageHref(page - 1)} rel="prev">
+                                        ← 前のページ
+                                    </a>
+                                ) : (
+                                    <span aria-disabled="true">
+                                        ← 前のページ
+                                    </span>
+                                )}
+                                <span
+                                    aria-current="page"
+                                    aria-label={`${pageCount}ページ中${page}ページ目`}
+                                >
+                                    {page} / {pageCount}
+                                </span>
+                                {page < pageCount ? (
+                                    <a href={pageHref(page + 1)} rel="next">
+                                        次のページ →
+                                    </a>
+                                ) : (
+                                    <span aria-disabled="true">
+                                        次のページ →
+                                    </span>
+                                )}
+                            </nav>
+                        )}
+                    </>
+                )}
+                {(month || tag) && (
+                    <a class="all-posts" href="/">
+                        最近の記事に戻る
+                    </a>
+                )}
+            </main>
+            <div class="archive-sidebar">
+                <nav class="archives panel" aria-labelledby="archives-heading">
+                    <h2 id="archives-heading">月別アーカイブ</h2>
+                    <ul>
+                        {months.map((value) => (
+                            <li>
+                                <a
+                                    href={`/archives/${value}/`}
+                                    aria-current={
+                                        value === month ? "page" : undefined
+                                    }
+                                >
+                                    <span>{monthLabel(value)}</span>
+                                    <span class="archive-count">
+                                        {
+                                            posts.filter((post) =>
+                                                post.date.startsWith(
+                                                    `${value}-`,
+                                                ),
+                                            ).length
+                                        }
+                                        件
+                                    </span>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+                <section class="preferences" aria-label="タグ">
+                    <div class="tags panel">
+                        <h2>タグ</h2>
+                        <div class="tag-list">
+                            {tags.map((value) => (
+                                <a
+                                    class="tag"
+                                    href={tagHref(value)}
+                                    aria-current={
+                                        value === tag ? "page" : undefined
+                                    }
+                                >
+                                    {tagLabel(value)}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    <footer class="home-footer">
+        <span>© devegoma</span>
+        <small>開発用サンプル · 記事・記事画像は表示確認用です。</small>
+    </footer>
+</HomeLayout>
+
+<script>
+    const sort = document.querySelector<HTMLButtonElement>(".post-sort");
+    const list = document.getElementById("article-list");
+    if (sort && list) {
+        sort.disabled = false;
+        sort.addEventListener("click", () => {
+            sort.value = sort.value === "desc" ? "asc" : "desc";
+            sort.textContent = sort.value === "asc" ? "↑ 古い順" : "↓ 新しい順";
+            const articles = Array.from(list.querySelectorAll("article"));
+            articles.sort((a, b) => {
+                const order = a.dataset.date!.localeCompare(b.dataset.date!);
+                return sort.value === "asc" ? order : -order;
+            });
+            list.append(...articles);
+        });
+    }
+</script>

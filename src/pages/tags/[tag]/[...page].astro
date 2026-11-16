@@ -1,0 +1,21 @@
+---
+import TagPage from "../../../components/TagPage.astro";
+import { getPosts } from "../../../data/posts";
+
+export async function getStaticPaths() {
+    const posts = await getPosts({ includeDrafts: false });
+    return [...new Set(posts.flatMap((post) => post.tags))].flatMap((tag) => {
+        const count = posts.filter((post) => post.tags.includes(tag)).length;
+        return Array.from({ length: Math.ceil(count / 10) }, (_, index) => ({
+            params: {
+                tag,
+                page: index === 0 ? undefined : `page/${index + 1}`,
+            },
+            props: { tag, page: index + 1 },
+        }));
+    });
+}
+const { tag, page } = Astro.props;
+---
+
+<TagPage tag={tag} page={page} />
