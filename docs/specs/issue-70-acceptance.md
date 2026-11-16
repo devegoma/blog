@@ -37,3 +37,19 @@
 [登録済み認証による事前確認](https://github.com/devegoma/blog/actions/runs/43793898523) は成功しました。Pagesプロジェクトは `blog`、本番ブランチは `main`、公開先の基底URLは `https://blog-5w4.pages.dev/` です。Git連携先は `devegoma/blog` で、本番・プレビューのGit自動公開はいずれも停止しています。
 
 [プロジェクトの確認結果](../verification/issue70-preflight/issue70-project.json) と [取得元の対応](../verification/issue70-preflight/receipts.json) を保存しました。確認時点の既存productionデプロイはコミット `c5d2e87651fd6ef8fc7dcfbd76844893369b6260`、ブランチはdevelopでした。これは従来の公開状態であり、今回のmainからの自動公開成功とは扱いません。G3では新しいmainのコミットとの一致を必須にします。
+
+## G3の公開準備と承認の境界
+
+[公開準備PR #77](https://github.com/devegoma/blog/pull/77) を作成しました。取り込み先はmain、対象ブランチは `codex/issue-70-release`、対象headは `9cb268860a3fe9a3c3dc7cfc4e1dc97ec9dfdbac` です。mainは初期コミットのため、このPRにはdevelopで実装済みのサイト全体も含みます。
+
+[PRの必須チェック](https://github.com/devegoma/blog/actions/runs/43795101668) は成功しました。Lint・整形・型チェック、単体90件、CI隔離検証23シナリオ、キュー4ケースと古い対象の再実行、本番成果物の独立13シナリオ、両用途のビルドと成果物検査が成功しています。画面テストは186件成功、既存条件による対象外12件です。PRの `Deploy production` は正しくskippedでした。このPR上の成功を本番公開成功とは扱いません。
+
+[公開前の対応表](../verification/issue70-production/pre-release.json) を保存しました。mainへのマージを試みたところ、自動承認審査は、実際の本番自動公開を起動するmain反映への明示承認が必要として操作を拒否しました。mainは変更していません。現在はこのPRのmain反映とPages blogのproduction自動公開について、利用者の明示承認を待っています。
+
+本番照合コマンド `scripts/verify-live-publication.mjs` は用意済みで、正常な対応、別コミット、不一致ファイル、PRの検査結果を公開成功に使わないこと、404文書の配信を扱う全5件のテストが成功しています。実公開後にActionsの成果物と実行情報、Cloudflareの新しいproductionデプロイを取得して、全ファイルをデプロイ固有URLとproductionの基底URLの両方で照合します。
+
+## 操作方法と残る担当範囲
+
+通常公開、判定ログ、待機、全ジョブの再実行、成果物保持期間、公開後の照合方法を [公開手順](../operations/publish.md) にまとめました。#32の実装と隔離検証は完了し、実際のmainからの自動公開と本番ファイルの一致が、残る受け入れ項目です。
+
+独自ドメイン・HTTPSは #33、main保護と復旧手順は #34、全画面と執筆・公開手順の総合確認は #35 の担当です。これらの問題を、本番の正常なPages公開の成否とは分けて記録します。

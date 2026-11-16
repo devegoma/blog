@@ -1,0 +1,23 @@
+{
+    "prUrl": "https://github.com/devegoma/blog/pull/77",
+    "base": "main",
+    "head": "codex/issue-70-release",
+    "expectedHeadSha": "9cb268860a3fe9a3c3dc7cfc4e1dc97ec9dfdbac",
+    "checksRunUrl": "https://github.com/devegoma/blog/actions/runs/43795101668",
+    "event": "pull_request",
+    "conclusion": "success",
+    "jobs": [
+        {
+            "id": 133062015308,
+            "name": "Checks",
+            "conclusion": "success"
+        },
+        {
+            "id": 133064445972,
+            "name": "Deploy production",
+            "conclusion": "skipped"
+        }
+    ],
+    "releaseState": "awaiting_explicit_main_merge_approval",
+    "productionDeploymentPerformed": false
+}
