@@ -13,6 +13,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { data, Evaluator, Lexer, Parser } from "@actions/expressions";
 import { parse } from "yaml";
+import { checkout, createRemote, git } from "../unit-tests/helpers/ci-git.mjs";
 
 const project = fileURLToPath(new URL("../", import.meta.url));
 const workflow = parse(
@@ -22,7 +23,12 @@ const bash =
     process.platform === "win32" ? "C:/Program Files/Git/bin/bash.exe" : "bash";
 const artifactName = "Store verified production artifact";
 const publishName = "Publish verified production artifact";
-const commit = "a".repeat(40);
+const remoteRoot = mkdtempSync(path.join(tmpdir(), "ci-remote-"));
+const fixture = createRemote(remoteRoot);
+const commit = fixture.commits[0];
+process.once("exit", () =>
+    rmSync(remoteRoot, { recursive: true, force: true }),
+);
 
 function expressionData(value) {
     if (typeof value === "boolean") return new data.BooleanData(value);
@@ -62,10 +68,15 @@ function interpolate(value, context) {
 function scenario({
     event = "push",
     ref = "refs/heads/main",
-    enabled = true,
     failAt,
     corrupt = false,
     checksResult,
+    target = commit,
+    latest = target,
+    remote,
+    hold,
+    entered,
+    publishLog,
 } = {}) {
     const root = mkdtempSync(path.join(tmpdir(), "ci-workflow-"));
     const calls = [];
@@ -73,11 +84,12 @@ function scenario({
         github: {
             event_name: event,
             ref,
-            sha: commit,
+            sha: target,
             run_id: "123",
             run_attempt: "1",
         },
         needs: {},
+        steps: {},
         secrets: {
             CLOUDFLARE_API_TOKEN: "isolated-token",
             CLOUDFLARE_ACCOUNT_ID: "isolated-account",
@@ -85,7 +97,7 @@ function scenario({
     };
     const env = {
         ...process.env,
-        GITHUB_SHA: commit,
+        GITHUB_SHA: target,
         GITHUB_REPOSITORY: "devegoma/blog",
         GITHUB_RUN_ID: "123",
         GITHUB_RUN_ATTEMPT: "1",
@@ -93,6 +105,9 @@ function scenario({
         CI_TEST_NODE: process.execPath.replaceAll("\\", "/"),
         CI_TEST_LOG: path.join(root, "calls.jsonl"),
         CI_TEST_STUB: path.join(root, "stub.mjs").replaceAll("\\", "/"),
+        CI_TEST_HOLD: hold ?? "",
+        CI_TEST_ENTERED: entered ?? "",
+        CI_TEST_PUBLISH_LOG: publishLog ?? "",
     };
     const bin = path.join(root, "bin");
     mkdirSync(bin);
@@ -111,7 +126,8 @@ function scenario({
     writeFileSync(
         path.join(root, "stub.mjs"),
         `
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { setTimeout } from 'node:timers/promises';
 const args = process.argv.slice(2);
 appendFileSync(process.env.CI_TEST_LOG, JSON.stringify({ args, cwd: process.cwd() }) + '\\n');
 if ('pnpm ' + args.join(' ') === process.env.CI_TEST_FAIL) process.exit(1);
@@ -122,10 +138,21 @@ if (args.join(' ') === 'test') {
     mkdirSync('dist-verification', { recursive: true });
     writeFileSync('dist-verification/index.html', 'sample must not deploy');
 }
-if (args[0] === 'dlx') {
+if (args[0] === 'dlx' && args.includes('deploy')) {
     if (process.env.CLOUDFLARE_API_TOKEN !== 'isolated-token') process.exit(1);
     if (process.env.CLOUDFLARE_ACCOUNT_ID !== 'isolated-account') process.exit(1);
     if (readFileSync('dist/index.html', 'utf8') !== '<html>inspected production</html>') process.exit(1);
+    const record = (event) => {
+        if (process.env.CI_TEST_PUBLISH_LOG) appendFileSync(process.env.CI_TEST_PUBLISH_LOG, JSON.stringify({ event, commit: process.env.GITHUB_SHA }) + '\\n');
+    };
+    record('start');
+    if (process.env.CI_TEST_ENTERED) writeFileSync(process.env.CI_TEST_ENTERED, 'entered');
+    const deadline = Date.now() + 20000;
+    while (process.env.CI_TEST_HOLD && existsSync(process.env.CI_TEST_HOLD)) {
+        if (Date.now() > deadline) throw new Error('Publication fixture was not released');
+        await setTimeout(20);
+    }
+    record('end');
 }
 `,
     );
@@ -133,6 +160,7 @@ if (args[0] === 'dlx') {
         let stored = false;
         let failed = false;
         let deployment = "skipped";
+        const decisions = [];
         for (const jobName of ["checks", "deploy"]) {
             const job = workflow.jobs[jobName];
             if (jobName === "deploy") {
@@ -140,10 +168,7 @@ if (args[0] === 'dlx') {
                     result: checksResult ?? (failed ? "failure" : "success"),
                     outputs: { "production-artifact-id": stored ? "42" : "" },
                 };
-                const condition = enabled
-                    ? job.if.replace("false && ", "")
-                    : job.if;
-                if (!evaluate(condition, contexts).value) break;
+                if (!evaluate(job.if, contexts).value) break;
                 failed = false;
                 deployment = "success";
             }
@@ -153,7 +178,30 @@ if (args[0] === 'dlx') {
                 path.join(project, "scripts/ci-artifact.mjs"),
                 path.join(workspace, "scripts/ci-artifact.mjs"),
             );
+            cpSync(
+                path.join(project, "scripts/check-latest-main.mjs"),
+                path.join(workspace, "scripts/check-latest-main.mjs"),
+            );
+            if (jobName === "deploy") {
+                if (!remote)
+                    git([
+                        "-C",
+                        fixture.remote,
+                        "update-ref",
+                        "refs/heads/main",
+                        latest === "unavailable" ? commit : latest,
+                    ]);
+                checkout(
+                    workspace,
+                    remote ??
+                        (latest === "unavailable"
+                            ? path.join(root, "absent")
+                            : fixture.remote),
+                );
+            }
             for (const step of job.steps) {
+                if (failed && !/\b(success|failure)\s*\(/.test(step.if ?? ""))
+                    continue;
                 if (
                     step.if
                         ? !evaluate(step.if, contexts, failed).value
@@ -171,6 +219,11 @@ if (args[0] === 'dlx') {
                     continue;
                 }
                 if (step.run) {
+                    const output = path.join(
+                        root,
+                        `${jobName}-${step.id ?? "step"}.output`,
+                    );
+                    writeFileSync(output, "");
                     const stepEnv = Object.fromEntries(
                         Object.entries(step.env ?? {}).map(([key, value]) => [
                             key,
@@ -197,11 +250,24 @@ if (args[0] === 'dlx') {
                                 workspace,
                                 step["working-directory"] ?? ".",
                             ),
-                            env: { ...env, ...stepEnv },
+                            env: { ...env, ...stepEnv, GITHUB_OUTPUT: output },
                             encoding: "utf8",
                         },
                     );
                     assert(!result.error, result.error?.message);
+                    if (step.id) {
+                        contexts.steps[step.id] = {
+                            outputs: Object.fromEntries(
+                                readFileSync(output, "utf8")
+                                    .trim()
+                                    .split("\n")
+                                    .filter(Boolean)
+                                    .map((line) => line.split("=")),
+                            ),
+                        };
+                    }
+                    if (step.id === "latest-main")
+                        decisions.push(result.stdout);
                     if (result.status !== 0) {
                         assert(
                             label === failAt ||
@@ -263,7 +329,11 @@ if (args[0] === 'dlx') {
             calls,
             stored,
             deployment,
-            published: log.filter((call) => call.args[0] === "dlx"),
+            decisions,
+            published: log.filter(
+                (call) =>
+                    call.args[0] === "dlx" && call.args.includes("deploy"),
+            ),
         };
     } finally {
         rmSync(root, { recursive: true, force: true });
@@ -273,7 +343,12 @@ if (args[0] === 'dlx') {
 assert.deepEqual(workflow.on.push.branches, ["main", "develop"]);
 assert.deepEqual(workflow.on.pull_request.branches, ["main", "develop"]);
 assert.equal(workflow.jobs.deploy.needs, "checks");
-assert.match(workflow.jobs.deploy.if, /^\$\{\{ false && /);
+assert.doesNotMatch(workflow.jobs.deploy.if, /false && /);
+assert.deepEqual(workflow.jobs.deploy.concurrency, {
+    group: "pages-blog-production",
+    "cancel-in-progress": false,
+});
+assert(!workflow.jobs.checks.concurrency);
 const upload = workflow.jobs.checks.steps.find(
     (step) => step.name === artifactName,
 );
@@ -289,6 +364,15 @@ assert.deepEqual(Object.keys(workflow.jobs), ["checks", "deploy"]);
 const publish = workflow.jobs.deploy.steps.find(
     (step) => step.name === publishName,
 );
+const guardIndex = workflow.jobs.deploy.steps.findIndex(
+    (step) => step.id === "latest-main",
+);
+assert.equal(workflow.jobs.deploy.steps.indexOf(publish), guardIndex + 1);
+assert.equal(
+    workflow.jobs.deploy.steps[guardIndex - 1].run,
+    "pnpm dlx wrangler@4.135.0 --version",
+);
+assert.equal(publish.if, "${{ steps.latest-main.outputs.publish == 'true' }}");
 assert.match(publish.run, /^pnpm dlx wrangler@4\.135\.0 pages deploy dist /);
 assert.match(
     publish.run,
@@ -309,67 +393,82 @@ for (const [jobName, job] of Object.entries(workflow.jobs)) {
     }
 }
 
-let cases = 0;
-function check(options, expected) {
-    const result = scenario(options);
-    assert.equal(result.published.length, expected, JSON.stringify(options));
-    cases++;
-    return result;
-}
+export { scenario, workflow, commit };
 
-for (const options of [
-    {},
-    { ref: "refs/heads/develop" },
-    { event: "pull_request", ref: "refs/pull/68/merge" },
-    { event: "workflow_dispatch" },
-])
-    check({ ...options, enabled: false }, 0);
-const success = check({}, 1);
-assert(success.stored);
-assert.equal(success.deployment, "success");
-assert.deepEqual(success.published[0].args, [
-    "dlx",
-    "wrangler@4.135.0",
-    "pages",
-    "deploy",
-    "dist",
-    "--project-name",
-    "blog",
-    "--branch",
-    "main",
-    "--commit-hash",
-    commit,
-    "--commit-dirty=false",
-    "--no-bundle",
-]);
-for (const options of [
-    { ref: "refs/heads/develop" },
-    { event: "pull_request", ref: "refs/pull/68/merge" },
-    { event: "pull_request" },
-    { event: "workflow_dispatch" },
-    { event: "workflow_call" },
-    { event: "push", ref: "refs/tags/test" },
-])
-    check(options, 0);
-for (const failAt of [
-    "pnpm install --frozen-lockfile",
-    "pnpm lint",
-    "pnpm format:check",
-    "pnpm check",
-    "pnpm exec playwright install --with-deps chromium firefox",
-    "pnpm test",
-    "Inspect final production artifact",
-    "Package verified production artifact",
-    artifactName,
-]) {
-    const result = check({ failAt }, 0);
-    assert.equal(result.stored, false);
+if (process.argv[2] === "--scenario") {
+    console.log(JSON.stringify(scenario(JSON.parse(process.argv[3]))));
+} else if (path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+    let cases = 0;
+    function check(options, expected) {
+        const result = scenario(options);
+        assert.equal(
+            result.published.length,
+            expected,
+            JSON.stringify(options),
+        );
+        cases++;
+        return result;
+    }
+
+    const success = check({}, 1);
+    assert(success.stored);
+    assert.equal(success.deployment, "success");
+    assert.deepEqual(success.published[0].args, [
+        "dlx",
+        "wrangler@4.135.0",
+        "pages",
+        "deploy",
+        "dist",
+        "--project-name",
+        "blog",
+        "--branch",
+        "main",
+        "--commit-hash",
+        commit,
+        "--commit-dirty=false",
+        "--no-bundle",
+    ]);
+    for (const options of [
+        { ref: "refs/heads/develop" },
+        { event: "pull_request", ref: "refs/pull/68/merge" },
+        { event: "pull_request" },
+        { event: "workflow_dispatch" },
+        { event: "workflow_call" },
+        { event: "push", ref: "refs/tags/test" },
+    ])
+        check(options, 0);
+    for (const failAt of [
+        "pnpm install --frozen-lockfile",
+        "pnpm lint",
+        "pnpm format:check",
+        "pnpm check",
+        "pnpm exec playwright install --with-deps chromium firefox",
+        "pnpm test",
+        "Inspect final production artifact",
+        "Package verified production artifact",
+        artifactName,
+    ]) {
+        const result = check({ failAt }, 0);
+        assert.equal(result.stored, false);
+    }
+    for (const checksResult of ["failure", "cancelled", "skipped"])
+        check({ checksResult }, 0);
+    assert(check({ failAt: "Prepare pinned Wrangler" }, 0).stored);
+    const corrupt = check({ corrupt: true }, 0);
+    assert.equal(corrupt.deployment, "failure");
+    assert(!corrupt.calls.includes(publishName));
+    for (const latest of [fixture.commits[1], "unavailable"]) {
+        const result = check({ latest }, 0);
+        assert(
+            result.decisions[0].includes(
+                latest === "unavailable"
+                    ? "reason=main-unavailable"
+                    : "reason=stale-commit",
+            ),
+        );
+        assert(!result.calls.includes(publishName));
+    }
+    console.log(
+        `CI deployment: ${cases} isolated scenarios passed; no external deployment was performed.`,
+    );
 }
-for (const checksResult of ["failure", "cancelled", "skipped"])
-    check({ checksResult }, 0);
-const corrupt = check({ corrupt: true }, 0);
-assert.equal(corrupt.deployment, "failure");
-assert(!corrupt.calls.includes(publishName));
-console.log(
-    `CI deployment: ${cases} isolated scenarios passed; no external deployment was performed.`,
-);

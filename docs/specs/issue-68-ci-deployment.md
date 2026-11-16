@@ -1,5 +1,7 @@
 # Issue #68 検証済み成果物を公開するCI
 
+本書は #68 時点の実装・検証記録です。その後 #69 で競合制御と最新main確認を追加し、利用者の明示承認を受けて固定の公開停止条件を解除しました。現在の構成は [Issue #69の記録](issue-69-deployment-order.md) を参照してください。
+
 ## 目的と制約
 
 [Issue #68](https://github.com/devegoma/blog/issues/68) の対象は、必須チェックに成功したmainの本番成果物を再ビルドせず公開処理へ渡すCIです。CIはGitHub Actionsによる自動検査を指します。
