@@ -1,0 +1,11 @@
+{
+    "runUrl": "https://github.com/devegoma/blog/actions/runs/43793898523",
+    "workflowCommit": "7a1a9471b3fa233f6442a974a4a67658e425cca1",
+    "jobId": 133058247989,
+    "conclusion": "success",
+    "artifactId": 14193731324,
+    "artifactDigest": "sha256:7f2adb8b9e69f570bc38464a79fce3256c1cd93a7c03017b9ae08a1f064e776e",
+    "downloadedZipDigestMatched": true,
+    "retentionDays": 7,
+    "jsonCopies": "Formatted copy of generated project evidence. No secret values are included."
+}

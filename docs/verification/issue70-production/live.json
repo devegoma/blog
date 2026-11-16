@@ -1,0 +1,188 @@
+{
+    "checkedAt": "2026-11-16T05:18:51.878Z",
+    "result": "passed",
+    "commit": "1cb6bad6a13792daf6521bd70ba16411448fa0af",
+    "actionsRun": "https://github.com/devegoma/blog/actions/runs/43808240866",
+    "runId": 43808240866,
+    "runAttempt": 1,
+    "artifactId": 14200255028,
+    "artifactDigest": "sha256:bb4809bc461324544d878ca170d5a8d53d06956ca7a7d564934d0fd748c8b15f",
+    "deploymentId": "4c0fbda1-5488-44a9-a6fb-3254b860b234",
+    "deploymentUrl": "https://4c0fbda1.blog-5w4.pages.dev",
+    "deploymentUrlCheck": {
+        "result": "cloudflare-access-protected",
+        "status": 302
+    },
+    "productionUrl": "https://blog-5w4.pages.dev/",
+    "inspectedFiles": 19,
+    "checkedResponses": 19,
+    "files": [
+        {
+            "url": "https://blog-5w4.pages.dev/404.html",
+            "path": "404.html",
+            "status": 200,
+            "size": 6500,
+            "sha256": "e72d18edb9fe73f6597ea378aad6353a8dfc98b24e4717b05e9ca76e478ef603"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/_astro/SiteHeader.BJ-ucThZ.css",
+            "path": "_astro/SiteHeader.BJ-ucThZ.css",
+            "status": 200,
+            "size": 16321,
+            "sha256": "0f1b239e1bb4199f7b95be1fa0189277bf234239ad72f433afa963566cdd7847"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/_astro/TagPage.B16vAL9K.css",
+            "path": "_astro/TagPage.B16vAL9K.css",
+            "status": 200,
+            "size": 5411,
+            "sha256": "14ced54e348da1dac3a85cdca5987803ec984596688f532b8b517fb8c24ccff0"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/_astro/_..DQgm28AN.css",
+            "path": "_astro/_..DQgm28AN.css",
+            "status": 200,
+            "size": 9100,
+            "sha256": "db7f084a58930a62d5fbab819d8f22bc5771f47a6498c052702382b0f2d576eb"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/about/index.html",
+            "path": "about/index.html",
+            "status": 200,
+            "size": 10322,
+            "sha256": "ca2c84be9d5a82a67fd8641b84063e9db2d1c498910bd121f108afbda35b87f8"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/fonts/OFL-DM-Sans.txt",
+            "path": "fonts/OFL-DM-Sans.txt",
+            "status": 200,
+            "size": 4389,
+            "sha256": "2af94f4fb533be8fa23282eb33e08ca311ddf47c2f32777e2040b282deeec65c"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/fonts/OFL-IBM-Plex-Mono.txt",
+            "path": "fonts/OFL-IBM-Plex-Mono.txt",
+            "status": 200,
+            "size": 4363,
+            "sha256": "37784b44044a4ffd9256702b7c0982c37e5c8887ba90c6dca0479aea93dc898d"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/fonts/OFL-Noto-Sans-JP.txt",
+            "path": "fonts/OFL-Noto-Sans-JP.txt",
+            "status": 200,
+            "size": 4388,
+            "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/fonts/README.md",
+            "path": "fonts/README.md",
+            "status": 200,
+            "size": 551,
+            "sha256": "96ee3ddb96eb2a15dfb54e929911cf711bd9338c761cd9986c5fb65ee7c8e539"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/fonts/dm-sans.ttf",
+            "path": "fonts/dm-sans.ttf",
+            "status": 200,
+            "size": 240164,
+            "sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/fonts/ibm-plex-mono.ttf",
+            "path": "fonts/ibm-plex-mono.ttf",
+            "status": 200,
+            "size": 135580,
+            "sha256": "6a3412f058c7d8dfd9170c41e85ade48e5156ecb89356110ca57a0a27734af46"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/fonts/noto-sans-jp.ttf",
+            "path": "fonts/noto-sans-jp.ttf",
+            "status": 200,
+            "size": 9589900,
+            "sha256": "c2f3b4d463500a2ddcd3849cded1fceeb9fd6d1c32e6cbecd568453ba50fc68f"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/images/profile.png",
+            "path": "images/profile.png",
+            "status": 200,
+            "size": 2735637,
+            "sha256": "96a294888cfde5565ca7691227f8fc6c10f06a71b1485fc3b6b604b92cb5d517"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/images/social-share.png",
+            "path": "images/social-share.png",
+            "status": 200,
+            "size": 23846,
+            "sha256": "6eac131e10e367306c0208bd1978a4bef6a2e0391ff395ea565e2363f0e624b9"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/index.html",
+            "path": "index.html",
+            "status": 200,
+            "size": 7985,
+            "sha256": "30f15696fe93dee24623995f33d61b093ae7f74e13d8d8d26823c0c8d7502e47"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/robots.txt",
+            "path": "robots.txt",
+            "status": 200,
+            "size": 70,
+            "sha256": "e8e0a7129c23d18455d7e1437197bf190be88666258f504cf7476d1f2274b990"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/rss.xml",
+            "path": "rss.xml",
+            "status": 200,
+            "size": 300,
+            "sha256": "89e2bef14711bb81426baa978eb4d4b0332d15fa83ad477c8f3d7127870d0473"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/sitemap.xml",
+            "path": "sitemap.xml",
+            "status": 200,
+            "size": 262,
+            "sha256": "0b7e23b25b573d307f2acbd28df015f65a3cf874a8ab1e418397df7e61c03c12"
+        },
+        {
+            "url": "https://blog-5w4.pages.dev/tags/index.html",
+            "path": "tags/index.html",
+            "status": 200,
+            "size": 6285,
+            "sha256": "7268344e6dd1940e3717eff96b8b3900aff3b2f7d9c790ff847c8a19e8db7a26"
+        }
+    ],
+    "smoke": [
+        {
+            "path": "/",
+            "status": 200
+        },
+        {
+            "path": "/about/",
+            "status": 200
+        },
+        {
+            "path": "/tags/",
+            "status": 200
+        },
+        {
+            "path": "/rss.xml",
+            "status": 200
+        },
+        {
+            "path": "/sitemap.xml",
+            "status": 200
+        },
+        {
+            "path": "/images/social-share.png",
+            "status": 200
+        },
+        {
+            "path": "/posts/sample/",
+            "status": 404
+        },
+        {
+            "path": "/posts/automation/",
+            "status": 404
+        }
+    ]
+}

@@ -1,0 +1,24 @@
+{
+    "productionCiDefinitionSha256": "1b72bd3fcf778b1ea66ecd7439b01e78482528c545f6973e25103150779b3ddc",
+    "acceptance": {
+        "runUrl": "https://github.com/devegoma/blog/actions/runs/43793878795",
+        "workflowCommit": "edf6a58e9f44cd410506228988af52fc7ab5a559",
+        "conclusion": "success",
+        "artifactId": 14193696651,
+        "artifactDigest": "sha256:d9c560776fce340f62e652e092a12bb84533e3b30df489cd8d5bc99072478059",
+        "downloadedZipDigestMatched": true
+    },
+    "failureGate": {
+        "runUrl": "https://github.com/devegoma/blog/actions/runs/43793878743",
+        "workflowCommit": "edf6a58e9f44cd410506228988af52fc7ab5a559",
+        "expectedWorkflowConclusion": "failure",
+        "failedCheckJobId": 133058184827,
+        "skippedPublicationJobId": 133058211338,
+        "successfulAuditJobId": 133058210369,
+        "artifactId": 14193173220,
+        "artifactDigest": "sha256:6e4bb1a9fd15752f073e1602fe1718756b34135af5508385acb04c5b2ef3a174",
+        "downloadedZipDigestMatched": true
+    },
+    "retentionDays": 7,
+    "jsonCopies": "Formatted copies of the generated JSON; ZIP digests preserve original artifact identity."
+}

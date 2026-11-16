@@ -1,0 +1,37 @@
+{
+    "checkedAt": "2026-11-16T05:20:45.542Z",
+    "pr": "https://github.com/devegoma/blog/pull/77",
+    "merged": true,
+    "commit": "1cb6bad6a13792daf6521bd70ba16411448fa0af",
+    "mainRun": "https://github.com/devegoma/blog/actions/runs/43808240866",
+    "checksJobId": 133103836661,
+    "publicationJobId": 133106464549,
+    "artifact": {
+        "id": 14200255028,
+        "digest": "sha256:bb4809bc461324544d878ca170d5a8d53d06956ca7a7d564934d0fd748c8b15f",
+        "downloadedZipDigestMatched": true,
+        "originalManifestPreservedInDownloadedZip": true,
+        "formattedManifestCopy": "manifest.json",
+        "retentionDays": 7
+    },
+    "deploymentId": "4c0fbda1-5488-44a9-a6fb-3254b860b234",
+    "publicationLog": [
+        "2026-11-16T05:16:13.8310832Z Production publication: target=1cb6bad6a13792daf6521bd70ba16411448fa0af latest-main=1cb6bad6a13792daf6521bd70ba16411448fa0af decision=publish reason=latest-main",
+        "2026-11-16T05:16:17.9054480Z ✨ Success! Uploaded 4 files (15 already uploaded) (0.92 sec)",
+        "2026-11-16T05:16:20.5514160Z ✨ Deployment complete! Take a peek over at https://4c0fbda1.blog-5w4.pages.dev"
+    ],
+    "registeredSecretsUsedByActions": true,
+    "secretsFetchedOrRecorded": false,
+    "productionCiDefinitionSha256": "1b72bd3fcf778b1ea66ecd7439b01e78482528c545f6973e25103150779b3ddc",
+    "verification": {
+        "artifactFiles": 19,
+        "productionFilesMatched": 19,
+        "smokeResponses": 8,
+        "deploymentUrl": "Cloudflare Access protected; redirect recorded, bytes not checked"
+    },
+    "adjacentIssues": {
+        "33": "Independent domain/HTTPS acceptance; earlier domain response is not new deployment proof",
+        "34": "Main protection and recovery, including configuring named required checks (currently empty)",
+        "35": "Whole-site UI and authoring/publication acceptance"
+    }
+}
