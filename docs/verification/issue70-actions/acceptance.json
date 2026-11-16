@@ -1,0 +1,52 @@
+{
+    "repository": "devegoma/blog",
+    "workflowCommit": "edf6a58e9f44cd410506228988af52fc7ab5a559",
+    "runId": "43793878795",
+    "runAttempt": "1",
+    "result": "passed",
+    "cloudflareSecretsUsed": false,
+    "externalPublicationCalls": 0,
+    "cases": [
+        {
+            "scenario": "serialize",
+            "holderJobId": 133058367813,
+            "candidateJobId": 133058482054,
+            "holderCalls": 1,
+            "candidateCalls": 1,
+            "decision": "Production publication: target=b8c5d8c36909402db77342ac543198412858a86d latest-main=b8c5d8c36909402db77342ac543198412858a86d decision=publish reason=latest-main",
+            "queuedAt": "2026-11-16T02:44:29.740Z",
+            "mainUpdatedAt": "2026-11-16T02:44:29.814Z",
+            "holderEndedAt": "2026-11-16T02:44:30.854Z",
+            "candidateStartedAt": "2026-11-16T02:44:48.681Z"
+        },
+        {
+            "scenario": "stale",
+            "holderJobId": 133058367852,
+            "candidateJobId": 133058482343,
+            "holderCalls": 1,
+            "candidateCalls": 0,
+            "decision": "Production publication: target=b8c5d8c36909402db77342ac543198412858a86d latest-main=a526d645b7104bb59f4952c6a6eb01bffd4a8a01 decision=skip reason=stale-commit",
+            "oldCommitRerun": {
+                "target": "a8d93c42739e1199a9b52ca106846f4a1f64da62",
+                "decision": "Production publication: target=a8d93c42739e1199a9b52ca106846f4a1f64da62 latest-main=a526d645b7104bb59f4952c6a6eb01bffd4a8a01 decision=skip reason=stale-commit",
+                "publicationCalls": 0
+            },
+            "queuedAt": "2026-11-16T02:44:28.210Z",
+            "mainUpdatedAt": "2026-11-16T02:44:28.293Z",
+            "holderEndedAt": "2026-11-16T02:44:29.848Z",
+            "candidateStartedAt": "2026-11-16T02:44:51.793Z"
+        },
+        {
+            "scenario": "unavailable",
+            "holderJobId": 133058367765,
+            "candidateJobId": 133058482311,
+            "holderCalls": 1,
+            "candidateCalls": 0,
+            "decision": "Production publication: target=b8c5d8c36909402db77342ac543198412858a86d latest-main=unknown decision=skip reason=main-unavailable",
+            "queuedAt": "2026-11-16T02:44:27.389Z",
+            "mainUpdatedAt": "2026-11-16T02:44:27.468Z",
+            "holderEndedAt": "2026-11-16T02:44:28.958Z",
+            "candidateStartedAt": "2026-11-16T02:44:49.723Z"
+        }
+    ]
+}

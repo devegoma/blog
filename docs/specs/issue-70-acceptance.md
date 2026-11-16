@@ -13,8 +13,8 @@
 
 ## チェックリスト
 
-- [ ] G1: 専用ブランチに検証用ワークフローを用意し、GitHub Actions上の実行・ジョブ状態・判定ログを記録します。
-- [ ] G2: Pages APIの読み取り確認をActionsから実行し、秘密値を除いた設定と接続結果を記録します。
+- [x] G1: 専用ブランチで実際のGitHub Actionsの待機と競合制御、古い対象・取得失敗・チェック失敗のスキップを確認し、証拠を保存しました。
+- [x] G2: 登録済みSecretsでPages APIに接続し、公開先・本番ブランチ・Git自動公開停止を確認しました。秘密値は出力・保存していません。
 - [ ] G3: 検査に成功した正常なmain更新の本番自動公開を確認し、成果物と公開ファイルを照合します。
 - [ ] 統合: 成功・未完了を区別し、証拠のURL、ID、コミット、ハッシュ、確定した操作方法を記録します。
 
@@ -23,3 +23,17 @@
 既存の作業コピーとworktreeは保持します。G1では本番と分離したconcurrencyグループとローカルGitリモートのmainを使い、実際のGitHubジョブ待機中に検証用mainを更新します。本番のmainへ意図的な不良成果物は入れません。チェック失敗を扱う検証用実行は意図した失敗を含み、その失敗が公開ジョブをスキップさせたことを別の監査ジョブで確認します。
 
 本番デプロイは、必要な安全条件と公開先を確認した後にだけ行います。独自ドメイン・HTTPSは #33、ブランチ保護・復旧は #34、画面全体と執筆手順は #35 の担当です。正式記事の執筆は行いません。正式記事0件でも必要なページが成立すれば受け入れ可能です。
+
+## G1の実測結果
+
+[Actions受け入れ実行](https://github.com/devegoma/blog/actions/runs/43793878795) は成功しました。GitHub自身のconcurrencyで先行・後続のジョブを直列化しました。後続がqueuedであることをAPIで確認してから検証用Gitリモートのmainを更新し、その後に先行を終了させました。後続の公開開始は先行終了後であり、最新mainと一致する場合だけ記録用公開が1回呼ばれました。不一致・main取得失敗では0回です。古い対象を再検査するステップも公開されませんでした。
+
+[チェック失敗の実行](https://github.com/devegoma/blog/actions/runs/43793878743) は、意図した終了コード17によって全体がfailureです。公開ジョブはskipped、監査ジョブはsuccessであり、受け入れ条件は成功しています。本番への公開もCloudflare Secretsの参照もありません。
+
+生成された [検証結果](../verification/issue70-actions/acceptance.json)、[失敗時の監査結果](../verification/issue70-actions/failure-gate.json)、[実行・成果物の対応](../verification/issue70-actions/receipts.json) を保存しました。元のZIPのSHA-256がGitHubのartifact digestと一致することを確認しています。JSONは整形済みの写しです。
+
+## G2の実測結果
+
+[登録済み認証による事前確認](https://github.com/devegoma/blog/actions/runs/43793898523) は成功しました。Pagesプロジェクトは `blog`、本番ブランチは `main`、公開先の基底URLは `https://blog-5w4.pages.dev/` です。Git連携先は `devegoma/blog` で、本番・プレビューのGit自動公開はいずれも停止しています。
+
+[プロジェクトの確認結果](../verification/issue70-preflight/issue70-project.json) と [取得元の対応](../verification/issue70-preflight/receipts.json) を保存しました。確認時点の既存productionデプロイはコミット `c5d2e87651fd6ef8fc7dcfbd76844893369b6260`、ブランチはdevelopでした。これは従来の公開状態であり、今回のmainからの自動公開成功とは扱いません。G3では新しいmainのコミットとの一致を必須にします。
