@@ -1,0 +1,270 @@
+[
+    {
+        "id": 133103836661,
+        "name": "Checks",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-16T05:08:02Z",
+        "completed_at": "2026-11-16T05:15:53Z",
+        "steps": [
+            {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-11-16T05:08:03Z",
+                "completed_at": "2026-11-16T05:08:04Z"
+            },
+            {
+                "name": "Run actions/checkout@v7",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-11-16T05:08:04Z",
+                "completed_at": "2026-11-16T05:08:08Z"
+            },
+            {
+                "name": "Run pnpm/action-setup@v6",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-11-16T05:08:08Z",
+                "completed_at": "2026-11-16T05:08:12Z"
+            },
+            {
+                "name": "Run actions/setup-node@v7",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-11-16T05:08:12Z",
+                "completed_at": "2026-11-16T05:08:17Z"
+            },
+            {
+                "name": "Run pnpm install --frozen-lockfile",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-11-16T05:08:17Z",
+                "completed_at": "2026-11-16T05:08:19Z"
+            },
+            {
+                "name": "Run pnpm lint",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-11-16T05:08:19Z",
+                "completed_at": "2026-11-16T05:08:21Z"
+            },
+            {
+                "name": "Run pnpm format:check",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-11-16T05:08:21Z",
+                "completed_at": "2026-11-16T05:08:29Z"
+            },
+            {
+                "name": "Run pnpm check",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8,
+                "started_at": "2026-11-16T05:08:29Z",
+                "completed_at": "2026-11-16T05:08:34Z"
+            },
+            {
+                "name": "Run pnpm exec playwright install --with-deps chromium firefox",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-11-16T05:08:34Z",
+                "completed_at": "2026-11-16T05:08:56Z"
+            },
+            {
+                "name": "Run pnpm test",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10,
+                "started_at": "2026-11-16T05:08:56Z",
+                "completed_at": "2026-11-16T05:15:47Z"
+            },
+            {
+                "name": "Inspect final production artifact",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11,
+                "started_at": "2026-11-16T05:15:47Z",
+                "completed_at": "2026-11-16T05:15:49Z"
+            },
+            {
+                "name": "Package verified production artifact",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12,
+                "started_at": "2026-11-16T05:15:49Z",
+                "completed_at": "2026-11-16T05:15:49Z"
+            },
+            {
+                "name": "Store verified production artifact",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-11-16T05:15:49Z",
+                "completed_at": "2026-11-16T05:15:51Z"
+            },
+            {
+                "name": "Run actions/upload-artifact@v7",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 14,
+                "started_at": "2026-11-16T05:15:51Z",
+                "completed_at": "2026-11-16T05:15:51Z"
+            },
+            {
+                "name": "Post Run actions/setup-node@v7",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 26,
+                "started_at": "2026-11-16T05:15:51Z",
+                "completed_at": "2026-11-16T05:15:51Z"
+            },
+            {
+                "name": "Post Run pnpm/action-setup@v6",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 27,
+                "started_at": "2026-11-16T05:15:51Z",
+                "completed_at": "2026-11-16T05:15:51Z"
+            },
+            {
+                "name": "Post Run actions/checkout@v7",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 28,
+                "started_at": "2026-11-16T05:15:51Z",
+                "completed_at": "2026-11-16T05:15:51Z"
+            },
+            {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 29,
+                "started_at": "2026-11-16T05:15:51Z",
+                "completed_at": "2026-11-16T05:15:51Z"
+            }
+        ]
+    },
+    {
+        "id": 133106464549,
+        "name": "Deploy production",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-11-16T05:15:56Z",
+        "completed_at": "2026-11-16T05:16:23Z",
+        "steps": [
+            {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-11-16T05:15:56Z",
+                "completed_at": "2026-11-16T05:15:58Z"
+            },
+            {
+                "name": "Run actions/checkout@v7",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-11-16T05:15:58Z",
+                "completed_at": "2026-11-16T05:16:02Z"
+            },
+            {
+                "name": "Run pnpm/action-setup@v6",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-11-16T05:16:02Z",
+                "completed_at": "2026-11-16T05:16:06Z"
+            },
+            {
+                "name": "Run actions/setup-node@v7",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-11-16T05:16:06Z",
+                "completed_at": "2026-11-16T05:16:10Z"
+            },
+            {
+                "name": "Download verified production artifact",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-11-16T05:16:10Z",
+                "completed_at": "2026-11-16T05:16:11Z"
+            },
+            {
+                "name": "Verify downloaded production artifact",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-11-16T05:16:11Z",
+                "completed_at": "2026-11-16T05:16:11Z"
+            },
+            {
+                "name": "Prepare pinned Wrangler",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-11-16T05:16:11Z",
+                "completed_at": "2026-11-16T05:16:13Z"
+            },
+            {
+                "name": "Check latest main before publication",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8,
+                "started_at": "2026-11-16T05:16:13Z",
+                "completed_at": "2026-11-16T05:16:13Z"
+            },
+            {
+                "name": "Publish verified production artifact",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-11-16T05:16:13Z",
+                "completed_at": "2026-11-16T05:16:20Z"
+            },
+            {
+                "name": "Post Run actions/setup-node@v7",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 16,
+                "started_at": "2026-11-16T05:16:20Z",
+                "completed_at": "2026-11-16T05:16:20Z"
+            },
+            {
+                "name": "Post Run pnpm/action-setup@v6",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 17,
+                "started_at": "2026-11-16T05:16:20Z",
+                "completed_at": "2026-11-16T05:16:20Z"
+            },
+            {
+                "name": "Post Run actions/checkout@v7",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 18,
+                "started_at": "2026-11-16T05:16:20Z",
+                "completed_at": "2026-11-16T05:16:20Z"
+            },
+            {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 19,
+                "started_at": "2026-11-16T05:16:21Z",
+                "completed_at": "2026-11-16T05:16:21Z"
+            }
+        ]
+    }
+]

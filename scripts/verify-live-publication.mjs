@@ -25,8 +25,22 @@ export async function verifyPublication(manifest, project, run) {
     assert.equal(deployment.protocol, "https:");
     assert(deployment.hostname.endsWith(`.${project.subdomain}`));
     const origins = [deployment.origin + "/", `https://${project.subdomain}/`];
+    const probe = await fetch(origins[0], {
+        signal: AbortSignal.timeout(20000),
+        redirect: "manual",
+    });
+    const location = probe.headers.get("location");
+    const access = location ? new URL(location, origins[0]) : null;
+    const protectedDeployment =
+        probe.status === 302 &&
+        access?.protocol === "https:" &&
+        access.hostname.endsWith(".cloudflareaccess.com") &&
+        access.pathname === `/cdn-cgi/access/login/${deployment.hostname}`;
+    const deploymentUrlCheck = protectedDeployment
+        ? { result: "cloudflare-access-protected", status: probe.status }
+        : { result: "files-verified" };
     const files = [];
-    for (const origin of origins) {
+    for (const origin of protectedDeployment ? origins.slice(1) : origins) {
         for (const file of manifest.files) {
             assert(!file.path.startsWith("/") && !file.path.includes("\\"));
             assert(
@@ -94,6 +108,7 @@ export async function verifyPublication(manifest, project, run) {
         artifactDigest: run.productionArtifact?.digest,
         deploymentId: project.deployment.id,
         deploymentUrl: project.deployment.url,
+        deploymentUrlCheck,
         productionUrl: origins[1],
         inspectedFiles: manifest.files.length,
         checkedResponses: files.length,

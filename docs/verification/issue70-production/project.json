@@ -1,0 +1,13 @@
+{
+    "name": "blog",
+    "productionBranch": "main",
+    "subdomain": "blog-5w4.pages.dev",
+    "deployment": {
+        "id": "4c0fbda1-5488-44a9-a6fb-3254b860b234",
+        "commit": "1cb6bad6a13792daf6521bd70ba16411448fa0af",
+        "branch": "main",
+        "environment": "production",
+        "status": "success",
+        "url": "https://4c0fbda1.blog-5w4.pages.dev"
+    }
+}

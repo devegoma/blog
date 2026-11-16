@@ -1,0 +1,18 @@
+{
+    "id": 43808240866,
+    "run_attempt": 1,
+    "head_sha": "1cb6bad6a13792daf6521bd70ba16411448fa0af",
+    "head_branch": "main",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/devegoma/blog/actions/runs/43808240866",
+    "created_at": "2026-11-16T05:07:59Z",
+    "updated_at": "2026-11-16T05:16:23Z",
+    "productionArtifact": {
+        "id": 14200255028,
+        "name": "production-1cb6bad6a13792daf6521bd70ba16411448fa0af-43808240866-1",
+        "digest": "sha256:bb4809bc461324544d878ca170d5a8d53d06956ca7a7d564934d0fd748c8b15f",
+        "downloadedZipDigestMatched": true
+    }
+}

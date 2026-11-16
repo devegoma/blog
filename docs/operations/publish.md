@@ -31,7 +31,9 @@ Actionsの成果物名は `production-<commit>-<run_id>-<run_attempt>` です。
 node scripts/verify-live-publication.mjs <展開した成果物> <公開プロジェクト情報.json> <Actions実行情報.json> <照合結果.json>
 ```
 
-公開プロジェクト情報にはCloudflareから取得した公開コミット・production状態・デプロイID・URLを、Actions実行情報にはmainへのpushの実行情報とproduction artifactのID・digestを渡します。トークンやアカウントの秘密値を含めません。コマンドは、まず成果物を再照合し、次にデプロイ固有URLとproductionの基底URLで全ファイルの内容・サイズ・SHA-256を比較します。通常ページ・RSS・サイトマップ・共通画像のHTTP応答と、サンプル記事URLの404も確認します。
+公開プロジェクト情報にはCloudflareから取得した現在のcanonical productionデプロイの公開コミット・production状態・デプロイID・URLを、Actions実行情報にはmainへのpushの実行情報とproduction artifactのID・digestを渡します。トークンやアカウントの秘密値を含めません。コマンドは、まず成果物を再照合し、productionの基底URLで全ファイルの内容・サイズ・SHA-256を比較します。通常ページ・RSS・サイトマップ・共通画像のHTTP応答と、サンプル記事URLの404も確認します。
+
+デプロイ固有URLも照合します。ただしCloudflare Accessの認証URLへHTTP 302で転送される場合は、固有URLの内容を未照合として記録し、公開URLの全ファイル照合を続行します。認証画面をサイトの成果物とは扱いません。照合のためにアクセス保護を解除する必要はありません。公開URLのファイル不一致は、固有URLが保護されている場合もエラーになります。
 
 ## 公開先と切り分け
 

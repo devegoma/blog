@@ -18,6 +18,20 @@
             "conclusion": "skipped"
         }
     ],
-    "releaseState": "awaiting_explicit_main_merge_approval",
-    "productionDeploymentPerformed": false
+    "releaseState": "merged_and_production_verified",
+    "mergeCommit": "1cb6bad6a13792daf6521bd70ba16411448fa0af",
+    "mainRunUrl": "https://github.com/devegoma/blog/actions/runs/43808240866",
+    "mainMergeAndProductionApproved": true,
+    "restrictUpdatesRemovalApproved": true,
+    "restrictUpdatesRemovalSavedAndVerified": true,
+    "mergeBlocker": {
+        "httpStatus": 405,
+        "message": "Cannot update this protected ref.",
+        "rulesetId": 26015848,
+        "rulesetName": "protect-main",
+        "restrictUpdates": true,
+        "bypassListEmptyObservedInOwnerUi": true,
+        "ruleChangeSaved": false
+    },
+    "productionDeploymentPerformed": true
 }

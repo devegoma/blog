@@ -15,8 +15,8 @@
 
 - [x] G1: 専用ブランチで実際のGitHub Actionsの待機と競合制御、古い対象・取得失敗・チェック失敗のスキップを確認し、証拠を保存しました。
 - [x] G2: 登録済みSecretsでPages APIに接続し、公開先・本番ブランチ・Git自動公開停止を確認しました。秘密値は出力・保存していません。
-- [ ] G3: 検査に成功した正常なmain更新の本番自動公開を確認し、成果物と公開ファイルを照合します。
-- [ ] 統合: 成功・未完了を区別し、証拠のURL、ID、コミット、ハッシュ、確定した操作方法を記録します。
+- [x] G3: 正常なmain更新の本番自動公開と、全19ファイルの一致を確認しました。
+- [x] 統合: 証拠のURL、ID、コミット、ハッシュ、確定した操作方法と隣接Issueの未完了範囲を記録しました。
 
 ## 検証の境界
 
@@ -44,13 +44,27 @@
 
 [PRの必須チェック](https://github.com/devegoma/blog/actions/runs/43795101668) は成功しました。Lint・整形・型チェック、単体90件、CI隔離検証23シナリオ、キュー4ケースと古い対象の再実行、本番成果物の独立13シナリオ、両用途のビルドと成果物検査が成功しています。画面テストは186件成功、既存条件による対象外12件です。PRの `Deploy production` は正しくskippedでした。このPR上の成功を本番公開成功とは扱いません。
 
-[公開前の対応表](../verification/issue70-production/pre-release.json) を保存しました。mainへのマージを試みたところ、自動承認審査は、実際の本番自動公開を起動するmain反映への明示承認が必要として操作を拒否しました。mainは変更していません。現在はこのPRのmain反映とPages blogのproduction自動公開について、利用者の明示承認を待っています。
+[公開前の対応表](../verification/issue70-production/pre-release.json) を保存しました。利用者は対象headのmain反映とPages blogのproduction自動公開を明示承認しました。その後の通常マージは、GitHubの `protect-main` が更新を制限しているためHTTP 405で拒否されました。所有者の画面でも例外対象が空で、マージできない状態を確認しました。
 
-本番照合コマンド `scripts/verify-live-publication.mjs` は用意済みで、正常な対応、別コミット、不一致ファイル、PRの検査結果を公開成功に使わないこと、404文書の配信を扱う全5件のテストが成功しています。実公開後にActionsの成果物と実行情報、Cloudflareの新しいproductionデプロイを取得して、全ファイルをデプロイ固有URLとproductionの基底URLの両方で照合します。
+利用者は `Restrict updates` だけを無効にし、ほかの保護設定を維持する変更も承認しました。利用者によるGitHubの本人確認後、保存済みのルールをAPIで取得しました。更新制限だけが外れ、PR必須・強制プッシュ禁止・作成制限・削除制限・チェック設定が維持されています。[保存後のルール](../verification/issue70-production/main-rules-after.json) を保存しました。必須チェックの名前一覧が空である点など、保護全体の整備は #34 に残します。
+
+PR #77はmainへマージされ、公開対象コミットは `1cb6bad6a13792daf6521bd70ba16411448fa0af` です。[mainのCI実行](https://github.com/devegoma/blog/actions/runs/43808240866) のChecksとDeploy productionはいずれも成功しました。
+
+本番照合コマンド `scripts/verify-live-publication.mjs` は、正常な対応、別コミット、不一致ファイル、PRの検査結果を公開成功に使わないこと、404文書、Cloudflare Accessで保護されたデプロイ固有URLを扱う全6件のテストが成功しています。保護されたURLでは認証への転送を記録し、公開URLで全ファイルの一致を必須にします。
+
+## G3の実測結果
+
+mainのChecksジョブ `133103836661` と公開ジョブ `133106464549` は成功しました。公開直前のログは `decision=publish reason=latest-main` で、対象と最新mainはともに `1cb6bad6a13792daf6521bd70ba16411448fa0af` です。Wranglerは検査済み19ファイルを再ビルドせずに公開しました。[実行情報](../verification/issue70-production/run.json)、[ジョブと各ステップ](../verification/issue70-production/jobs.json)、[対応表](../verification/issue70-production/receipts.json) を保存しました。
+
+本番成果物IDは `14200255028`、ZIPのSHA-256は `bb4809bc461324544d878ca170d5a8d53d06956ca7a7d564934d0fd748c8b15f` です。ダウンロードしたZIPのハッシュがGitHubのdigestと一致し、展開後のコミット・run・試行番号・全ファイルも再照合しました。[manifestの写し](../verification/issue70-production/manifest.json) を保存しました。
+
+CloudflareのproductionデプロイIDは `4c0fbda1-5488-44a9-a6fb-3254b860b234` です。Cloudflare APIで取得した [公開先情報](../verification/issue70-production/project.json) のブランチmain、コミット、production、successがActionsと一致しました。[公開URL](https://blog-5w4.pages.dev/) の全19ファイルでサイズとSHA-256が成果物と一致しました。[配信の照合結果](../verification/issue70-production/live.json) に、ファイルごとのハッシュと必要ページ・RSS・サイトマップ・画像のHTTP 200、サンプル記事2URLのHTTP 404を記録しました。正式記事は0件で、必要ページは成立しています。
+
+デプロイ固有URLはCloudflare Accessの認証へHTTP 302で転送されます。最初の照合では転送先の認証画面を取得したため不一致となりました。確認コマンドを修正し、認証への転送を明記しました。固有URLのファイル内容は未照合です。アクセス保護を解除せず、公開URLの全ファイル一致とCloudflareのcanonical productionデプロイ情報で今回の本番反映を確認しました。
 
 ## 操作方法と残る担当範囲
 
-通常公開、判定ログ、待機、全ジョブの再実行、成果物保持期間、公開後の照合方法を [公開手順](../operations/publish.md) にまとめました。#32の実装と隔離検証は完了し、実際のmainからの自動公開と本番ファイルの一致が、残る受け入れ項目です。
+通常公開、判定ログ、待機、全ジョブの再実行、成果物保持期間、公開後の照合方法を [公開手順](../operations/publish.md) にまとめました。#32の実装・隔離検証に加え、#31から引き継いだ登録済みSecretsでの接続、mainからのWrangler自動公開、実行・デプロイ・コミット・成果物・本番URLの対応を確認しました。CI/CDの受け入れ条件は完了です。
 
 独自ドメイン・HTTPSは #33、main保護と復旧手順は #34、全画面と執筆・公開手順の総合確認は #35 の担当です。これらの問題を、本番の正常なPages公開の成否とは分けて記録します。
 

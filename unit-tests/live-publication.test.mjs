@@ -90,3 +90,37 @@ test("live publication rejects PR checks as evidence of production publication",
     run.event = "pull_request";
     await assert.rejects(verifyPublication(manifest, project, run));
 });
+
+test("protected deployment URLs are reported without treating a login page as site bytes", async (t) => {
+    const { manifest, project, run } = fixture(t);
+    const siteFetch = globalThis.fetch;
+    t.mock.method(globalThis, "fetch", async (url, options) => {
+        if (new URL(url).hostname === "abc.blog-5w4.pages.dev") {
+            assert.equal(options.redirect, "manual");
+            return new Response(null, {
+                status: 302,
+                headers: {
+                    location:
+                        "https://blog-5w4-pages.cloudflareaccess.com/cdn-cgi/access/login/abc.blog-5w4.pages.dev",
+                },
+            });
+        }
+        return siteFetch(url, options);
+    });
+    const report = await verifyPublication(manifest, project, run);
+    assert.equal(
+        report.deploymentUrlCheck.result,
+        "cloudflare-access-protected",
+    );
+    assert.equal(report.checkedResponses, manifest.files.length);
+    assert(
+        report.files.every(
+            (file) => new URL(file.url).hostname === project.subdomain,
+        ),
+    );
+    manifest.files[0].sha256 = "0".repeat(64);
+    await assert.rejects(
+        verifyPublication(manifest, project, run),
+        /artifact mismatch/,
+    );
+});
