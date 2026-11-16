@@ -1,0 +1,41 @@
+name: Issue 70 expected check failure
+
+on:
+    push:
+        branches: [codex/issue-70-acceptance]
+
+permissions:
+    contents: read
+
+jobs:
+    checks:
+        name: Deliberately failing isolated check
+        runs-on: ubuntu-latest
+        steps:
+            - run: exit 17
+    publish:
+        name: Publication must be skipped
+        needs: checks
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/codex/issue-70-acceptance' && needs.checks.result == 'success' }}
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo 'UNEXPECTED PUBLICATION CALL'; exit 1
+    audit:
+        if: always()
+        needs: [checks, publish]
+        runs-on: ubuntu-latest
+        steps:
+            - env:
+                  CHECK_RESULT: ${{ needs.checks.result }}
+                  PUBLICATION_RESULT: ${{ needs.publish.result }}
+              run: |
+                  test "$CHECK_RESULT" = failure
+                  test "$PUBLICATION_RESULT" = skipped
+                  mkdir -p test-results
+                  printf '{"check":"failure","publication":"skipped","publicationCalls":0,"result":"passed"}\n' > test-results/failure-gate.json
+                  cat test-results/failure-gate.json >> "$GITHUB_STEP_SUMMARY"
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: issue-70-failure-gate-report
+                  path: test-results/failure-gate.json
+                  retention-days: 7
