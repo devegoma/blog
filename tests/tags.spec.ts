@@ -29,6 +29,7 @@ test("タグの選択・変更・解除と記事詳細への移動", async ({ pa
     await expect(
         page.getByRole("navigation", { name: "ページ送り" }),
     ).toHaveCount(0);
+    await page.waitForLoadState("load");
     const chooser = (await page.locator(".tag-chooser").boundingBox())!;
     const list = (await page.locator(".article-list").boundingBox())!;
     const title = (await page.locator(".tag-page-title").boundingBox())!;

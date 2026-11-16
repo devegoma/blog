@@ -19,7 +19,7 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "check": "astro check",
-        "test": "pnpm test:unit && pnpm test:content && pnpm test:rss && pnpm test:publication && pnpm test:drafts && pnpm test:tags && pnpm test:home && pnpm test:sitemap && pnpm test:search-metadata && pnpm test:social-metadata && pnpm test:build-targets && pnpm test:production-artifacts:cases && pnpm build && pnpm test:production-artifacts && pnpm build:verification && node scripts/check-search-artifacts.mjs dist-verification && playwright test",
+        "test": "pnpm test:unit && pnpm test:ci && pnpm test:content && pnpm test:rss && pnpm test:publication && pnpm test:drafts && pnpm test:tags && pnpm test:home && pnpm test:sitemap && pnpm test:search-metadata && pnpm test:social-metadata && pnpm test:build-targets && pnpm test:production-artifacts:cases && pnpm build && pnpm test:production-artifacts && pnpm build:verification && node scripts/check-search-artifacts.mjs dist-verification && playwright test",
         "test:home": "node scripts/check-home.mjs",
         "test:content": "node scripts/check-content.mjs",
         "test:rss": "node scripts/check-rss.mjs",
@@ -34,7 +34,8 @@
         "test:unit": "node --test unit-tests/*.test.mjs",
         "test:ui": "playwright test --ui",
         "test:drafts": "node scripts/check-draft-preview.mjs",
-        "test:build-targets": "node scripts/check-build-targets.mjs"
+        "test:build-targets": "node scripts/check-build-targets.mjs",
+        "test:ci": "node scripts/check-ci-deployment.mjs"
     },
     "dependencies": {
         "@astrojs/mdx": "8.1.1",
@@ -45,6 +46,7 @@
         "tailwindcss": "4.3.3"
     },
     "devDependencies": {
+        "@actions/expressions": "0.3.61",
         "@astrojs/check": "0.9.12",
         "@playwright/test": "1.64.1",
         "@types/node": "24.19.2",
@@ -56,6 +58,7 @@
         "prettier-plugin-tailwindcss": "0.8.1",
         "sax": "1.6.1",
         "typescript": "6.0.3",
-        "typescript-eslint": "8.72.1"
+        "typescript-eslint": "8.72.1",
+        "yaml": "2.9.1"
     }
 }
