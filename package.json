@@ -35,7 +35,7 @@
         "test:ui": "playwright test --ui",
         "test:drafts": "node scripts/check-draft-preview.mjs",
         "test:build-targets": "node scripts/check-build-targets.mjs",
-        "test:ci": "node scripts/check-ci-deployment.mjs"
+        "test:ci": "node scripts/check-ci-deployment.mjs && node scripts/check-ci-order.mjs"
     },
     "dependencies": {
         "@astrojs/mdx": "8.1.1",

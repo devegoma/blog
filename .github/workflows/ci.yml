@@ -56,8 +56,10 @@ jobs:
     deploy:
         name: Deploy production
         needs: checks
-        # Issue #69 must add concurrency control and a latest-main check before removing false.
-        if: ${{ false && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.checks.result == 'success' }}
+        concurrency:
+            group: pages-blog-production
+            cancel-in-progress: false
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.checks.result == 'success' }}
         runs-on: ubuntu-latest
         timeout-minutes: 20
         steps:
@@ -76,7 +78,15 @@ jobs:
                   merge-multiple: true
             - name: Verify downloaded production artifact
               run: node scripts/ci-artifact.mjs verify release
+            - name: Prepare pinned Wrangler
+              env:
+                  WRANGLER_SEND_METRICS: "false"
+              run: pnpm dlx wrangler@4.135.0 --version
+            - name: Check latest main before publication
+              id: latest-main
+              run: node scripts/check-latest-main.mjs
             - name: Publish verified production artifact
+              if: ${{ steps.latest-main.outputs.publish == 'true' }}
               working-directory: release
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
