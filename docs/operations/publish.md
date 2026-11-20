@@ -42,3 +42,13 @@ Pagesプロジェクトは `blog`、本番ブランチは `main`、Pagesの基�
 `Checks` が失敗した場合は、その失敗を修正して再検証します。公開処理が失敗した場合は、Cloudflare側に既にデプロイが作成されている可能性もあるため、ActionsとCloudflareの公開コミット・状態を確認してから次の操作を決めます。
 
 独自ドメイン・HTTPSの整備は #33、mainの保護と復旧手順は #34、画面全体と執筆・公開の総合手順は #35 の担当です。CI/CDの受け入れ検証結果は [Issue #70](../specs/issue-70-acceptance.md) に記録します。
+
+## 取り消しPRによる本番復旧
+
+1. GitHub Actionsの `CI` とCloudflare Pagesの `blog` を開き、現在の `main` のコミットと本番デプロイのコミットを確認します。不具合を起こしたPRと、影響を受けた公開ページを特定します。公開処理だけが失敗し、最新の `main` に修正が不要と判断できる場合は、そのコミットの全ジョブを再実行します。
+2. 不具合を起こした変更を取り消すPRを、最新の `main` に対して作成します。原因のPRが `main` 宛てなら、GitHubのマージ済みPRで **Revert** を選び、取り消しPRの宛先が `main` であることを確認します。原因が `develop` からまとめて公開した変更の一部なら、最新の `main` から作業ブランチを作り、該当コミットまたは差分だけを取り消して `main` 宛てのPRを作成します。
+3. PRの差分を確認します。競合があれば、後続の正常な変更を残して解消します。取り消し後も `.github/workflows/ci.yml` と、チェック・本番公開に必要なスクリプトや依存関係がそろっていることを確認します。初回公開の [PR #77](https://github.com/devegoma/blog/pull/77) にはCIと公開処理の追加も含まれています。このようなPRでは、不具合を起こした差分に絞って取り消すか、必要な箇所を修正するPRを作成します。
+4. PRを最新の `main` に追従させ、GitHub Actionsの `Checks` と、ほかに必須チェックがあればそのすべての成功を確認して `main` にマージします。PRでは `Deploy production` がスキップされます。
+5. マージ後の `main` のコミットで起動した `CI` を開き、`Checks` の成功と、`Deploy production` の `decision=publish reason=latest-main` および `Publish verified production artifact` の成功を確認します。公開がスキップされた場合は、現在の `main` に対応する実行を確認します。公開処理が失敗した場合は、Cloudflare Pagesの状態を確かめてから、必要に応じて対象コミットの全ジョブを再実行します。
+6. Cloudflare Pagesで本番デプロイのコミットが復旧用の `main` コミットと一致することを確認します。公開URLで、影響を受けたページや画像を開いて復旧を確認します。Actionsの実行URL、本番デプロイID、公開コミット、確認したURLを記録します。
+7. `develop` に不具合の原因となった変更が残っていれば、取り消しまたは修正を `develop` にも反映し、次の公開で再発しないようにします。
